@@ -1,0 +1,146 @@
+---
+layout:     post
+title:      "New Life 2015"
+date:       2015-02-19
+author:     "Kelvine"
+header-img: "img/post-bg-new_2015.jpg"
+tags:
+    - Life
+---
+
+
+> Fear not that life shall come to an end,but rather fear that it shall never have a beginning. —— J.H. Newman
+ 
+ 
+## 目录
+
+1.  [前言](#section-1)<br>
+2.  [解决方案介绍](#section-2)<br>
+  2.1.  [MarkDown 标记语言](#markdown-)<br>
+  2.2.  [环境搭建教程](#section-2)<br>
+3.  [结语](#section-3)<br>
+
+
+
+## 前言
+
+回顾过去的一年，总有一些事不那么容易，还好，过去的终将过去。  
+
+读万卷书，行万里路。读书并非翻书，行路也并非赶路。我们往往容易把对于名句的理解停留在文字的表面。想体会读书带来的乐趣，又无法坚持看完一本千挑万选的书，最后书架上的书成了自我安慰和向人炫耀的资本；想走遍祖国山川大地，又感叹时间匆匆流逝和力不能及，最后勉强跟着旅游团在邻省走了个过场。新的一年，愿你我去更多的地方，读更多的书，更好地去探索事物背后的本质、规律，经过长期的积累、尝试，慢慢可以变成自己想要的样子。
+
+
+---
+
+## 解决方案介绍
+
+如果你对编程有所了解，就一定听说过 [Github](https://github.com/) 。它号称程序员的 Facebook，有着极高的人气，很多重要的项目都托管在上面。这正是我的博客解决方案，一直想要拥有属于自己的博客，尽管已经有 CSDN，微信公众号等等（受众群体和用户体验不一样），但作为不满足的程序员，还是想探索更方便的途径。
+
+**解决方案的好处：**<br>
+永久免费，空间无限<br>
+文章版本控制，不再担心备份和远程协助<br>
+不限制编辑器，自由度高<br>
+
+关于 Github Pages 的基本信息见 [Github Pages官网](https://pages.github.com/) 简明的介绍，[Jekyll](http://jekyll.bootcss.com/) 是一个静态站点生成器，它会根据网页源码生成静态文件。Jekyll 框架的 Theme 可以自由选择，空间还是蛮大的。GitHub 会使用 Jekyll 解析 用户 username 名下的 username.github.io 项目中分支为 master 的源代码，为你构建一个静态网站，并将生成的 index.html 展示给你。除此之外，GitHub 还支持绑定域名，只需在文件根目录下创建一个 CNAME 文件，内容是你的域名 比如 XXX.com，然后进入到自己的域名管理下进行域名解析即可。
+
+关于 Github 的安装，可能会出现速度很慢的情况，一种解决方案是寻找靠谱的离线安装包，二可以参考 [GitHub for Windows安装失败解决](http://jingyan.baidu.com/article/fd8044fa924e8f5031137ac6.html) 。
+
+### MarkDown 标记语言 
+
+Markdown 是一种轻量级的「标记语言」,它的优点很多,目前也被越来越多的写作爱好者,撰稿者广泛使用。而 Markdown 编辑器有很多，各有所爱，可以使用 Sublime Text2 + Markdown Preview 。这边附上 [Markdown 快速入门](http://www.ituring.com.cn/article/23) 和 [语法详解](http://www.ituring.com.cn/article/504)。如果文章中需要加载图片的话可以使用 [Flickr](https://www.flickr.com/) 作为图床，虽然国内大小网站也不少，但不难保证什么时候就访问失效了。
+
+
+### 环境搭建教程
+
+**1. 安装Ruby & Development Kit**
+
+[RubyInstaller for windows](http://rubyinstaller.org/downloads/) 下载相应版本的 Ruby 和 Development Kit，接着安装 Ruby（**目录无中文且无空格**），并添加至环境变量，可通过输入 ruby -v 验证是否安装成功。接着解压 Development Kit，打开解压后的目录后在命令行中输入 ：
+
+~~~~python
+ruby dk.rb init ##初始化
+
+ruby dk.rb install ##安装
+~~~~
+
+**2. 安装 gem 以及 jekyll 包**
+
+由于网络原因无法直接安装，可更换 [淘宝 RubyGems 镜像](https://ruby.taobao.org/)
+我在操作过程中遇到如下问题：
+
+error fetching https //ruby.taobao.org/  
+SSL_connect returned=1 errno=0 state=SSLv3 read server certificate B: certificate verify failed
+
+**解决方案:**
+
+[关于 Windows 下证书无法验证问题](https://github.com/ruby-china/rubygems-mirror/wiki)
+[gem install SSL 错误](https://ruby-china.org/topics/29323)
+
+**安装 jekyll：**
+
+输入 gem -v 确保gem安装完成后，输入 gem install jekyll
+
+**最后记得安装分页模块：**
+
+输入 gem install jekyll-paginate 
+
+为了方便起见，我已将所需要的安装包整理打包，可供 [下载](https://www.dropbox.com/s/lyn98kb8fm0p0j3/jekyll%20%E5%8D%9A%E5%AE%A2%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%E5%AE%89%E8%A3%85%E5%8C%85.rar?dl=0)。『链接暂时失效』
+
+**3. Markdown 引擎 kramdown + 语法高亮 Rouge**
+
+GitHub 在 2016 年宣布更新到 Jekyll 3.0，并且开始启用新的 Markdown 以及语法高亮：[kramdown](https://kramdown.gettalong.org/syntax.html) + rouge，代替以前的 rdiscount + pygments。 在 cmd 中执行以下命令安装 kramdown 和 rouge：
+
+    gem install kramdown
+	gem install rouge
+
+然后在站点的 _config.yml 中加上以下内容：
+
+	markdown: kramdown
+	highlighter: rouge
+
+在 kramdown 中使用代码高亮的句法是：
+
+	~~~ lang
+		代码内容
+	~~~
+
+注意 kramdown 使用三个波浪号表示 code。
+将 lang 替换成需要高亮代码语言所对应的 Linguist 标记, 比如 C 语言是 c_cpp，可以在这里找到： 
+[linguist](https://github.com/github/linguist/blob/master/lib/linguist/languages.yml)
+
+语法高亮是通过 CSS 实现的。 所需的 CSS 文件由以下方法产生。 在 cmd 中执行：
+
+	rougify style github > highlight_github.css
+
+然后就可以使用产生的 CSS 文件了。上面命令中的 github 是 Rouge 可选 CSS 主题之一，其他的主题包括
+
+	colorful|github|monokai|monokai.sublime|thankful_eyes|base16|base16.dark|base16.light|base16.solarized|base16.monokai 
+
+模板文件中添加对应的 CSS 语句即可使用。例如
+
+	<link rel="stylesheet" href="/media/css/highlight_github.css">
+
+把 .css 文件放在了 /media/css/ 目录下。
+
+**4. 启动 Jekyll**
+
+按照官方的 [Jekyll 快速开始手册](https://jekyllrb.com/docs/quickstart/) 的步骤， 可测试成功创建一个新的 Jekyll 博客。
+
+    jekyll new myblog
+
+    jekyll serve myblog
+
+---
+
+
+## 结语
+
+没有任何一篇教程或是文章能够达到完美，在不断搜索和尝试之后所获得的成就感方才显得格外珍贵。在前人的成果基础上工作果然节省了很多工作，感谢默默付出的极客们。<br>
+
+
+
+
+> **参考**<br>
+ [廖雪峰Git 教程](http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000)<br>
+ [Pro Git（中文版）](http://git.oschina.net/progit/)<br>
+ [Pygments CSS](https://github.com/icco/pygments-css)<br>
+ [在 Windows 上安装 Jekyll](http://cn.yizeng.me/2013/05/10/setup-jekyll-on-windows/)<br>
+ [Windows 7 下安装配置 Jekyll + kramdown + Rouge 语法高亮](http://danny.li/notes/windows-7-jekyll-config/)

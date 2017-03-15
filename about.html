@@ -1,0 +1,126 @@
+---
+layout: page
+title: "About"
+description: "Carpe diem. Seize the day, boys. Make your lives extraordinary."
+header-img: "img/about-bg.jpg"
+---
+
+<!-- Language Selector
+<select onchange= "onLanChange(this.options[this.options.selectedIndex].value)">
+    <option value="0" selected> 中文 Chinese </option>
+    <option value="1"> 英语 English </option>
+</select> -->
+
+<!-- Chinese Version -->
+<div class="zh post-container">
+    <blockquote>
+        世界重复着自己，无休无止，不差毫厘。
+    </blockquote>
+    设想时间是一个圆圈，弯转过来首尾相接。世界重复着自己，无休无止，不差毫厘。<br><br>人们大都不知道，活过的日子还会从头再来。商人不知道同一买卖要一做再做。政治家不知道在时间的轮回中，他们还要在同一讲台上叫嚷无数遍。父母将儿女的第一声笑珍藏在心，好像再不会听到。头回做爱的恋人怯生生除却衣裳，对软腿酥胸叹为观止。他们哪里晓得那眉目之意、肌肤之亲都将一而再，再而三，一成不变？ <br><br>......<br><br>每个城市里都有个别人，在睡梦里隐约觉出所有事都曾发生在从前。这些人趑蹶蹭蹬，而且意识到自己前世即已想错做错、多灾多难。倒霉人与床单鏖战于死一样的夜晚。他又怎么能够安生，既已明白前世覆辙来世还要重蹈，每个举动都无法改变？这些两头落难的人说明了时间是个圆。每个城市后半夜的空街阳台，都被他们的唉声叹气填满。<br><br>......<br><br>每个旅馆，每个家庭，每个城市都是这般光景。在这个世界里，时间流过了，却什么也没变。年复一年，月复一月，日复一日，一切如旧。如果时间与事件的发生是一回事，那么时间动也没动。如果不是一回事，那么人挪也没挪。一个人在这世上要是没抱负，他苦而不知其苦；如果有抱负，他苦而知其苦，慢慢煎熬。<br><br>......<br><br>华屋耸起，桥下流水折花。撩魄撩魂，爱人红发。女青年拿着紫蝴蝶花。一室四壁两窗，一桌一灯两床，两张红脸，四只泪眼。初次接吻。行星困在空间，海洋无声无响。窗上一颗水珠。一盘绳。一把黄色的刷子。<br><br>......<br><br>
+    不能想象将来，便无从知道行为的后果。一些人于是涣散消沉，无所事事。大白天睁着眼，硬是不敢起床。他们喝喝咖啡，翻翻照片。另一些人却一大早就爬起来，不在乎人生能否筹划，干了是否白干。他们分分秒秒地活，分分秒秒都充实。还有一些人拿过去代替将来。他们摩挲每片记忆、每个行动、每对因果，慨叹自己居然风风雨雨混到眼前，这世界的末刻，时间之线的末端。
+
+    <p style="text-align:right;">
+        —— <a href="https://book.douban.com/subject/1030789/">阿兰·莱特曼  － 爱因斯坦的梦 </a>
+    </p>
+
+</div>
+
+<!-- English Version 
+<div class="en post-container">
+    <blockquote>
+        Designer or Engineer, things in between.
+    </blockquote>
+
+    <p>
+        Your work is going to fill a large part of your life, and the only way to be truly satisfied is to do what you believe is great work. And the only way to do great work is to love what you do. If you haven’t found it yet, keep looking. Don’t settle. As with all matters of the heart, you’ll know when you find it.
+    </p>
+
+    <p>
+    If you want to live your life in a creative way, as an artist, you have to not look back too much. You have to be willing to take whatever you’ve done and whoever you were and throw them away.
+    </p>
+
+    <p style="text-align:right;">
+    -- Steve Jobs
+    </p>
+
+</div>-->
+
+<!-- Handle Language Change -->
+<script type="text/javascript">
+    var $zh = document.querySelector(".zh");
+    var $en = document.querySelector(".en");
+    function onLanChange(index){
+        if(index == 0){
+            $zh.style.display = "block";
+            $en.style.display = "none";
+        }else{
+            $en.style.display = "block";
+            $zh.style.display = "none";
+        }
+    }
+    onLanChange(0);
+</script>
+
+
+
+{% if site.duoshuo_username %}
+<!-- 多说评论框 start -->
+<div class="comment">
+    <div class="ds-thread"
+    {% if site.duoshuo_username == "huxblog" %}
+        data-thread-id="1187623191091085319"
+    {% else %}
+        data-thread-key="{{site.duoshuo_username}}/about"
+    {% endif %}
+
+    data-title="{{page.title}}"
+    data-url="{{site.url}}/about/"></div>
+</div>
+<!-- 多说评论框 end -->
+
+<!-- Duoshuo hacking -->
+<input id="dsUser" type="hidden" value="{{site.duoshuo_username}}"  />
+
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    // dynamic User hacking by Hux
+    var _user = document.getElementById('dsUser').value;
+    // duoshuo comment query.
+    var duoshuoQuery = {short_name: _user };
+    (function() {
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+</script>
+<!-- 多说公共JS代码 end -->
+{% endif %}
+
+
+{% if site.disqus_username %}
+<!-- disqus 评论框 start -->
+<div class="comment">
+    <div id="disqus_thread" class="disqus-thread">
+
+    </div>
+</div>
+<!-- disqus 评论框 end -->
+
+<!-- disqus 公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = "{{site.disqus_username}}";
+    var disqus_identifier = "{{site.disqus_username}}/{{page.url}}";
+    var disqus_url = "{{site.url}}{{page.url}}";
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<!-- disqus 公共JS代码 end -->
+{% endif %}
