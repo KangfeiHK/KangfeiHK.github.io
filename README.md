@@ -4,6 +4,14 @@
 
 ### 修改日志
 
+2017-3-24 
+
+改自[brucezhaor Blog](https://brucezhaor.github.io/blog/2016/01/07/Mathjax-with-jekyll/)的博客
+
+* Add MathJax JavaScript
+
+-----------------------
+
 2017-03-15
 
 改自[Hux Blog](https://github.com/Huxpro/huxpro.github.io)的博客
