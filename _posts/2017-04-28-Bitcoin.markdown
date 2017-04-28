@@ -1,0 +1,31 @@
+---
+layout:     post
+title:      "比特币"
+date:       2017-04-28
+author:     "Kelvine"
+header-img: "img/post-bg-bitcoin.png"
+tags:
+    - 比特币
+    - 区块链
+    - 分享
+---
+
+
+>If you don’t believe me or don’t get it, I don’t have time to try to convince you, sorry.
+ —— Satoshi Nakamoto
+
+一切从2008年[中本聪](https://zh.wikipedia.org/wiki/%E4%B8%AD%E6%9C%AC%E8%81%AA)发布比特币白皮书开始。本文对领域内重要文章做一个简单梳理，不作个人评价。
+
+[Bitcoin: A Peer-to-Peer Electronic Cash System](https://bitcoin.org/bitcoin.pdf) by Satoshi Nakamoto 
+
+
+[比特币：一种点对点网络中的电子现金](http://www.8btc.com/wiki/bitcoin-a-peer-to-peer-electronic-cash-system) by 中本聪
+
+
+[区块链浏览器](https://blockchain.info) 可查看实时更新的区块节点信息
+
+一篇阐述数字货币的早期作品，探讨了未来世界如何保护数字隐私问题：
+
+Chaum D. Security without identification: [Transaction systems to make big brother obsolete[J]](https://www.cs.ru.nl/~jhh/pub/secsem/chaum1985bigbrother.pdf). Communications of the ACM, 1985, 28(10): 1030-1044. 
+
+更新中......
