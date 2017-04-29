@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      "比特币"
+title:      "区块链与比特币"
 date:       2017-04-28
 author:     "Kelvine"
 header-img: "img/post-bg-bitcoin.png"
@@ -14,18 +14,40 @@ tags:
 >If you don’t believe me or don’t get it, I don’t have time to try to convince you, sorry.
  —— Satoshi Nakamoto
 
+## 论文
+
 一切从2008年[中本聪](https://zh.wikipedia.org/wiki/%E4%B8%AD%E6%9C%AC%E8%81%AA)发布比特币白皮书开始。本文对领域内重要文章做一个简单梳理，不作个人评价。
 
-[Bitcoin: A Peer-to-Peer Electronic Cash System](https://bitcoin.org/bitcoin.pdf) by Satoshi Nakamoto 
+- [Bitcoin: A Peer-to-Peer Electronic Cash System](https://bitcoin.org/bitcoin.pdf) by Satoshi Nakamoto  [中文版](http://www.8btc.com/wiki/bitcoin-a-peer-to-peer-electronic-cash-system)
 
-
-[比特币：一种点对点网络中的电子现金](http://www.8btc.com/wiki/bitcoin-a-peer-to-peer-electronic-cash-system) by 中本聪
-
-
-[区块链浏览器](https://blockchain.info) 可查看实时更新的区块节点信息
+- 闪电网络：[The Bitcoin Lightning Network: Scalable Off-Chain Instant Payments](https://lightning.network/lightning-network-paper.pdf) 
 
 一篇阐述数字货币的早期作品，探讨了未来世界如何保护数字隐私问题：
 
-Chaum D. Security without identification: [Transaction systems to make big brother obsolete[J]](https://www.cs.ru.nl/~jhh/pub/secsem/chaum1985bigbrother.pdf). Communications of the ACM, 1985, 28(10): 1030-1044. 
+- Chaum D. Security without identification: [Transaction systems to make big brother obsolete[J]](https://www.cs.ru.nl/~jhh/pub/secsem/chaum1985bigbrother.pdf). Communications of the ACM, 1985, 28(10): 1030-1044. 
+
+## 项目工具
+
+下面介绍几个比特币相关信息网站：
+
+- 比特币信息统计网站；[blockchain.info](https://blockchain.info) 
+
+- 比特币 wiki，相关知识介绍；[bitcoin.it](https://en.bitcoin.it/wiki/Main_Page) 
+
+### Openchain
+
+区块链公司 [Coinprism](https://www.coinprism.com/) 发布Openchain:开源分布式账本 [Openchain](https://www.openchain.org/)  『[新闻报道](https://news.bitcoin.com/openchain-enterprise-ready-blockchain-technology/)』
+
+[Openchain Documentation](https://media.readthedocs.org/pdf/openchain/latest/openchain.pdf)
+
+
+## 书籍资料
+
+下面是两本 Github 开源的书籍：
+
+- [精通比特币](http://zhibimo.com/read/wang-miao/mastering-bitcoin/index.html) by Andreas M Antonopoulos
+
+- [区块链技术指南](https://yeasy.gitbooks.io/blockchain_guide/content/)
+
 
 更新中......
