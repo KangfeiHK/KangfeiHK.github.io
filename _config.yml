@@ -81,19 +81,10 @@ featured-condition-size: 1              # A tag will be featured if the size of 
 # Friends
 friends: [
     {
-        title: "KangfeiHK Blog",
-        href: "XXX"
+        title: "Kang CS",
+        href: "http://kangfeihk.com/notes/"
     },{
-        title: "Example",
-        href: "#"
-    },{
-        title: "Example",
-        href: "#"
-    },{
-        title: "Example",
-        href: "#"
-    },{
-        title: "Example",
-        href: "#"
+        title: "kissg Blog",
+        href: "http://kissg.me/"
     }
 ]
