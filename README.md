@@ -12,6 +12,12 @@
 
 -----------------------
 
+2017-7-30
+
+* 添加 Cloudflare 自定义域名配置 HTTPS
+
+-----------------------
+
 2017-03-15
 
 改自[Hux Blog](https://github.com/Huxpro/huxpro.github.io)的博客
