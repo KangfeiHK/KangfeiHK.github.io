@@ -4,17 +4,17 @@
 
 ### 修改日志
 
-2017-3-24 
+2017-7-30
+
+* 添加 Cloudflare 自定义域名配置 HTTPS
+
+-----------------------
+
+2017-3-24
 
 改自[brucezhaor Blog](https://brucezhaor.github.io/blog/2016/01/07/Mathjax-with-jekyll/)的博客
 
 * Add MathJax JavaScript
-
------------------------
-
-2017-7-30
-
-* 添加 Cloudflare 自定义域名配置 HTTPS
 
 -----------------------
 
