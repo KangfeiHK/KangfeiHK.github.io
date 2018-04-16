@@ -8,6 +8,10 @@ tags:
     - blockchain
 ---
 
+> The Times 03/Jan/2009 Chancellor on brink of second bailout for banks.
+—— Satoshi Nakamoto
+ 
+
 自 2017 年初以来，随着新一轮牛市开启，比特币价格不断突破新高，区块链的热度同时迎来了爆发式增长。从网络文章和社会舆论上看，如今的热度早已不是过去能比。但是不可否认，大多数人都是冲着数字货币的财富效应去的。由于网上科普贴已经很多，所以这里只做简单的一个梳理，记录一下自己对区块链的一些理解。
 
 

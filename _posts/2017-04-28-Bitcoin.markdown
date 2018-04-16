@@ -6,7 +6,7 @@ author:     "Kelvine"
 header-img: "img/post-bg-bitcoin.png"
 tags:
     - 比特币
-    - 区块链
+    - blockchain
     - 分享
 ---
 
