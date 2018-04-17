@@ -46,18 +46,14 @@ L = lcm(p-1,q-1) （最小公倍数）
 
 ### 椭圆曲线密码学
 
-椭圆曲线密码学（Elliptic Curve Cryptography，ECC），
-
-一般情况下，椭圆曲线可以用以下方程式表示（图示如下）：
-
-`E：y^2 = ax^3 + bx^2 + cx + d（a,b,c,d为常数）`
-
+椭圆曲线密码学（Elliptic Curve Cryptography，ECC），一般情况下，椭圆曲线可以用以下方程式表示（图示如下）：
+```
+E：y^2 = ax^3 + bx^2 + cx + d（a,b,c,d为常数）
+```
 ![](/img/in-post/ECC/ECC-01.png)
 
 
 椭圆曲线除了水平对称外，还有一个有趣的性质： 过曲线上任意两点（可重合）的直线必定与曲线相交于第三点。
-
-椭圆曲线密码中特定乘法运算的逆运算非常困难，因此安全性很高，相比RSA，椭圆密码曲线密钥长度更短但强度更高。
 
 下面先定义一下椭圆曲线上运算操作：
 
@@ -67,7 +63,7 @@ L = lcm(p-1,q-1) （最小公倍数）
 
 #### 椭圆曲线上的离散对数问题
 
-椭圆曲线密码正是利用了上述运算规则中“椭圆曲线的离散对数问题”的复杂度来保证算法的安全性。
+椭圆曲线密码正是利用了上述运算规则中“椭圆曲线的离散对数问题”的复杂度来保证算法的安全性，其中特定乘法运算的逆运算非常困难，相比RSA，椭圆密码曲线密钥长度更短但强度更高。
 
 椭圆曲线上的离散对数问题，其本质就是“已知xG求数x的问题”，定义为：
 ```
@@ -92,7 +88,7 @@ L = lcm(p-1,q-1) （最小公倍数）
 
 在比特币中，公钥是由私钥通过椭圆曲线算法计算得到 `public key = private key * G`，使用 [Secp256k1](https://en.bitcoin.it/wiki/Secp256k1) 参数，其定义公式如下：
 
-![](/img/in-post/ECC/ECC-02.png)
+![](/img/in-post/ECC/ECC-07.png)
 
 比特币中私钥、公钥、公钥哈希和钱包地址的关系如下图所示：
 ![](/img/in-post/ECC/ECC-04.png)
@@ -101,5 +97,9 @@ L = lcm(p-1,q-1) （最小公倍数）
 ![](/img/in-post/ECC/ECC-05.png)
 
 
-> 参考：<br>
+> 参考/更多阅读：<br>
 > [图解密码技术](https://hackernoon.com/merkle-trees-181cb4bc30b4) <br>
+> [【比特币技术系列】 椭圆曲线加密算法 - ECDSA](http://www.ehcoo.com/Bitcoin_ECDSA.html) <br>
+> [A (relatively easy to understand) primer on elliptic curve cryptography](https://arstechnica.com/information-technology/2013/10/a-relatively-easy-to-understand-primer-on-elliptic-curve-cryptography/) <br>
+> [椭圆曲线算法：入门（1）](https://www.jianshu.com/p/2e6031ac3d50) <br>
+> [椭圆曲线加密算法](https://juejin.im/post/5a67f3836fb9a01c9b661bd3) <br>
