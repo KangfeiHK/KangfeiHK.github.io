@@ -2,7 +2,7 @@
 layout:     post
 title:      "New Life 2015"
 date:       2015-02-19
-author:     "Kelvine"
+author:     "K"
 header-img: "img/post-bg-new_2015.jpg"
 tags:
     - Life

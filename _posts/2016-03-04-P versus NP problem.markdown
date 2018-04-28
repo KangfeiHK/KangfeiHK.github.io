@@ -2,7 +2,7 @@
 layout:     post
 title:      "P 与 NP 问题"
 date:       2016-03-04
-author:     "Kelvine"
+author:     "K"
 header-img: "img/post-bg-P versus NP.jpg"
 tags:
     - Study 

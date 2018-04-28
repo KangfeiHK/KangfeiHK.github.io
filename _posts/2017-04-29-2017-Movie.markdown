@@ -1,8 +1,8 @@
 ---
 layout:     post
-title:      "私人观影记录-2017"
+title:      "私人观影记录"
 date:       2017-04-29
-author:     "Kelvine"
+author:     "K"
 header-img: "img/post-bg-2017-movie.jpg"
 tags:
     - 电影

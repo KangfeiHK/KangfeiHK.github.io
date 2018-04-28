@@ -2,7 +2,7 @@
 layout:     post
 title:      "文章排版指南"
 date:       2015-08-01
-author:     "Kelvine"
+author:     "K"
 header-img: "img/post-bg-typesetting.jpg"
 tags:
     - 视觉文化

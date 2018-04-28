@@ -2,7 +2,7 @@
 layout:     post
 title:      "牛人博客"
 date:       2017-04-26
-author:     "Kelvine"
+author:     "K"
 header-img: "img/post-bg-somebody-blogs.jpg"
 tags:
     - Study 
@@ -16,7 +16,7 @@ tags:
 不多说，直接看下面几篇博文，学无止境啊。
 
 
-[博士五年总结系列](http://yuandong-tian.com/five_year_summary_of_PhD.pdf) by 田渊栋 
+[博士五年总结系列](http://yuandong-tian.com/five_year_summary_of_PhD.pdf) by 田渊栋，CMU Ph.D，现就职于 Facebook 人工智能研究院，[个人网站](http://yuandong-tian.com/)
 
 
 [The Ph.D. Grind - 博士磨砺](http://www.pgbovine.net/PhD-memoir.htm) by Philip Guo

@@ -2,7 +2,7 @@
 layout:     post
 title:      "『死亡诗社』影评"
 date:       2016-07-04
-author:     "鸿城过客"
+author:     "K"
 header-img: "img/post-bg-dead-poet.jpg"
 tags:
     - 电影

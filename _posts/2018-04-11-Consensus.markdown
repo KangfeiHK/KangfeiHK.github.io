@@ -5,7 +5,7 @@ date:       2018-04-11
 author:     "K"
 header-img: "img/post-bg-markdown.jpg"
 tags:
-    - blockchain
+    - Blockchain
 ---
 
 >In my whole life, I have known no wise people (over a broad subject matter area) who didn't read all the time -- none, zero.

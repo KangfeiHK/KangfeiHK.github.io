@@ -2,7 +2,7 @@
 layout:     post
 title:      "模式定理"
 date:       2015-07-01
-author:     "Kelvine"
+author:     "K"
 header-img: "img/post-bg-adaptive population sizing schemes.jpg"
 tags:
     - Study

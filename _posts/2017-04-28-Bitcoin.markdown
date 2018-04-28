@@ -2,11 +2,11 @@
 layout:     post
 title:      "区块链与比特币"
 date:       2017-04-28
-author:     "Kelvine"
+author:     "K"
 header-img: "img/post-bg-bitcoin.png"
 tags:
     - 比特币
-    - blockchain
+    - Blockchain
     - 分享
 ---
 
@@ -14,19 +14,39 @@ tags:
 >If you don’t believe me or don’t get it, I don’t have time to try to convince you, sorry.
  —— Satoshi Nakamoto
 
-## 论文
+### 论文
 
-一切从2008年[中本聪](https://zh.wikipedia.org/wiki/%E4%B8%AD%E6%9C%AC%E8%81%AA)发布比特币白皮书开始。本文对领域内重要文章做一个简单梳理，不作个人评价。
+#### Bitcoin
 
-- [Bitcoin: A Peer-to-Peer Electronic Cash System](https://bitcoin.org/bitcoin.pdf) by Satoshi Nakamoto  [中文版](http://www.8btc.com/wiki/bitcoin-a-peer-to-peer-electronic-cash-system)
+一切从 2008 年 [中本聪](https://zh.wikipedia.org/wiki/%E4%B8%AD%E6%9C%AC%E8%81%AA) 发布比特币白皮书开始。本文对领域内重要文章做一个简单梳理。
 
-- 闪电网络：[The Bitcoin Lightning Network: Scalable Off-Chain Instant Payments](https://lightning.network/lightning-network-paper.pdf) 
+- [Bitcoin: A Peer-to-Peer Electronic Cash System](https://bitcoin.org/bitcoin.pdf) by Satoshi Nakamoto  [中文版](http://www.8btc.com/wiki/bitcoin-a-peer-to-peer-electronic-cash-system)（没人知道中本聪是谁，总之是神一般的存在）
 
-一篇阐述数字货币的早期作品，探讨了未来世界如何保护数字隐私问题：
+- [The Bitcoin Lightning Network: Scalable Off-Chain Instant Payments](https://lightning.network/lightning-network-paper.pdf)：by Joseph Poon and Thaddeus Dryja
 
-- Chaum D. Security without identification: [Transaction systems to make big brother obsolete[J]](https://www.cs.ru.nl/~jhh/pub/secsem/chaum1985bigbrother.pdf). Communications of the ACM, 1985, 28(10): 1030-1044. 
+- [Bitcoin-NG: A Scalable Blockchain Protocol](https://arxiv.org/pdf/1510.02037.pdf)：by Ittay Eyal, Adem Efe Gencer, Emin Gun Sirer and Robbert van Renesse（一作康奈尔大学 博士后）
 
-## 项目工具
+- [SoK: Research Perspectives and Challenges for Bitcoin and Cryptocurrencies](http://www.jbonneau.com/doc/BMCNKF15-IEEESP-bitcoin.pdf)：by Joseph Bonneau, Andrew Miller, Jeremy Clark, Arvind Narayanan, Joshua A. Kroll and Edward W Felten
+
+#### Ethereum
+
+- [Ethereum whitepaper](https://github.com/ethereum/wiki/wiki/White-Paper) by Vitalik Buterin （V 神，94 年天才）
+
+- [Ethereum yellowpaper](http://gavwood.com/Paper.pdf) by Gavin Wood（以太坊核心开发者 及 Parity 科技创始人）
+
+- [Ethereum blog](https://blog.ethereum.org/author/vitalik-buterin/) a series of technical articles by Vitalik Buterin
+
+- [Plasma: Scalable Autonomous Smart Contracts](http://plasma.io/plasma.pdf) by Joseph Poon and Vitalik Buterin（闪电网络作者）
+
+
+#### Other
+
+- [Steem: An incentivized, blockchain-based, public content platform](https://steem.io/SteemWhitePaper.pdf)
+- [Filecoin - A Cryptocurrency Operated File Storage Network](https://filecoin.io/filecoin.pdf)
+- [Stratis Whitepaper](https://stratisplatform.com/files/Stratis_Whitepaper.pdf) by Chris Trew, Guy Brandon and Nicolas Dorier
+- Chaum D. Security without identification: [Transaction systems to make big brother obsolete[J]](https://www.cs.ru.nl/~jhh/pub/secsem/chaum1985bigbrother.pdf). Communications of the ACM, 1985, 28(10): 1030-1044.：一篇阐述数字货币的早期作品，探讨了未来世界如何保护数字隐私问题
+
+### 项目工具
 
 下面介绍几个比特币相关信息网站：
 
@@ -34,14 +54,12 @@ tags:
 
 - 比特币 wiki，相关知识介绍；[bitcoin.it](https://en.bitcoin.it/wiki/Main_Page) 
 
-### Openchain
+#### Openchain
 
-区块链公司 [Coinprism](https://www.coinprism.com/) 发布Openchain:开源分布式账本 [Openchain](https://www.openchain.org/)  『[新闻报道](https://news.bitcoin.com/openchain-enterprise-ready-blockchain-technology/)』
-
-[Openchain Documentation](https://media.readthedocs.org/pdf/openchain/latest/openchain.pdf)
+区块链公司 [Coinprism](https://www.coinprism.com/) 发布Openchain:开源分布式账本 [Openchain](https://www.openchain.org/)  『[新闻报道](https://news.bitcoin.com/openchain-enterprise-ready-blockchain-technology/)』、文档详见 [Openchain Documentation](https://media.readthedocs.org/pdf/openchain/latest/openchain.pdf)
 
 
-## 书籍资料
+### 书籍资料
 
 下面是两本 Github 开源的书籍：
 
@@ -49,5 +67,4 @@ tags:
 
 - [区块链技术指南](https://yeasy.gitbooks.io/blockchain_guide/content/)
 
-
-更新中......
+『2018.04.28 补充』：过去这一年发展迅猛，新增的资料太多了，无法列全，就不再一一列举，大多数一手优质资料都是英文，还是善用搜索吧。下面贴一份清单供参考 [bitcoin-reading-list](https://github.com/KangfeiHK/bitcoin-reading-list)

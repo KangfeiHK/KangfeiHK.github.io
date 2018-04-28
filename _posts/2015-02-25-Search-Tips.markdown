@@ -2,7 +2,7 @@
 layout:     post
 title:      "搜索技巧"
 date:       2015-02-25
-author:     "Kelvine"
+author:     "K"
 header-img: "img/post-bg-Google-guide.png"
 tags:
     - 工具 

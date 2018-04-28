@@ -2,7 +2,7 @@
 layout:     post
 title:      "Markdown 语法"
 date:       2015-02-23
-author:     "Kelvine"
+author:     "K"
 header-img: "img/post-bg-markdown.jpg"
 tags:
     - 工具
