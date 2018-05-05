@@ -232,6 +232,7 @@ tags:
 
 
 > **参考来源：**<br>
+[中文文案排版指北](https://github.com/mzlogin/chinese-copywriting-guidelines)<br>
 [Requirements for Chinese Text Layout 中文排版需求](http://w3c.github.io/clreq/#introduction)<br>
 [写给大家看的中文排版指南- Hindy](http://zhuanlan.zhihu.com/uicircle/20506092)<br>
 [GB/T 15834—2011 标点符号用法](http://www.moe.gov.cn/ewebeditor/uploadfile/2015/01/13/20150113091548267.pdf)<br>

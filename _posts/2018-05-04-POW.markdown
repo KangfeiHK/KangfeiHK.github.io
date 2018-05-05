@@ -10,11 +10,20 @@ tags:
 
 # 从Pow说起
 
-比特币网络中挖矿的本质就是寻找一个随机数（nNonce）使得满足计算公式的哈希值小于当前难度要求，可简化为公式如下：
+比特币网络中挖矿的本质就是矿工抢夺下一个区块的记账权，实际工作是寻找一个随机数（nNonce）使得区块头的哈希值计算结果小于等于当前目标，第一个找到符合要求的矿工将获得区块奖励以及该区块中包含的手续费。
 
-下面先从区块头的字段说起，区块头包括了4个字节的版本号（int32_t nVersion），32个字节的前一个区块的区块头hash值（uint256 hashPrevBlock），32字节的Merkle树根（uint256 hashMerkleRoot），4字节的时间戳（uint32_t nTime），4字节的本区块难度（uint32_t nBits），以及4字节的的随机数（uint32_t nNonce）。
+下面先从区块头的字段说起，Bitcoin 源码中 CBlockHeader 头文件中定义如下：
 
-Merkle 树根的计算在[上一篇文章](https://kangfeihk.com/2018/04/16/Merkle-Tree/)中已经写过。这里先关注 nBits 这个字段，决定全网挖矿的难度，每2016个区块重新调整，调整算法固定。
+```
+// header
+int32_t nVersion;           // 4 字节  Version
+uint256 hashPrevBlock;      // 32 字节 Previous block header hash
+uint256 hashMerkleRoot;     // 32 字节 Merkle root hash
+uint32_t nTime;             // 4 字节  Time
+uint32_t nBits;             // 4 字节  Target
+uint32_t nNonce;            // 4 字节  Nonce
+```
+Merkle 树根的计算在[上一篇文章](https://kangfeihk.com/2018/04/16/Merkle-Tree/)中已经写过。这里先关注 nBits 这个字段，决定全网挖矿的难度，每 2016 个区块重新调整，调整算法固定。
 
 ## Bits、target、difficulty 的关系
 
@@ -61,10 +70,7 @@ if (nActualTimespan > params.nPowTargetTimespan*4)
 
 总的来说，比特币每一次挖矿就是对头文件中的80个字节连续进行两次SHA256运算，其中区块版本号，只有在升级时候才会改变，hashPrevBlock 为前一个区块决定，nBits 由全网算力决定，剩下三个较为灵活，nNonce 为随机数，nTime 为时间，也有一定合理范围，hashMerkleRoot 由区块中包含的交易计算所得，即使改变顺序也会影响最终结果。
 
-
-
 --------
-
 
 > 参考：<br>
 > [Difficulty Explanation](https://en.bitcoin.it/wiki/Difficulty)：From Bitcoin Wiki <br>
