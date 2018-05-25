@@ -50,6 +50,9 @@ L = lcm(p-1,q-1) （最小公倍数）
 ```
 E：y^2 = ax^3 + bx^2 + cx + d（a,b,c,d为常数）
 ```
+
+\\[y^2 = x^3+ax+b \\]
+
 ![](/img/in-post/ECC/ECC-01.png)
 
 
