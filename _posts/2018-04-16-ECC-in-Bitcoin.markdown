@@ -48,7 +48,7 @@ L = lcm(p-1,q-1) （最小公倍数）
 
 椭圆密码曲线（Elliptic Curve）完整的定义可参考 [Wolfram MathWorld](http://mathworld.wolfram.com/EllipticCurve.html)，一般情况下，可以用以下方程式表示：
 
-\\[ \left \{ \left ( x,y\right )\epsilon R^2 \mid y^2 = x^3+ax+b,4a^3+27b^2\neq 0  \right \}\cup \left \{ 0 \right \} \\]
+![](/img/in-post/ECC/ECC-08.png)
 
 图示如下：
 
@@ -113,11 +113,11 @@ L = lcm(p-1,q-1) （最小公倍数）
 
 前面我们定义曲线的点集为：
 
-\\[\left \{ \left ( x,y\right ) \epsilon R^2 \mid y^2 = x^3+ax+b,4a^3+27b^2\neq 0  \right \}\cup \left \{ 0 \right \} \\]
+![](/img/in-post/ECC/ECC-08.png)
 
 下面切换到有限域 Fp 上，
 
-\\[ \left \{ \left ( x,y\right )\epsilon F_{p}^2 \mid y^2 \equiv  x^3+ax+b \;(\mathrm{mod}\; p)),4a^3+27b^2 \not\equiv  0 \;(\mathrm{mod}\; p) \right \}\cup \left \{ 0 \right \} \\]
+![](/img/in-post/ECC/ECC-09.png)
 
 其中 0 依旧认为是无限远的点，以及 a 和 b 是在 Fp 上的两个整数。可以证明椭圆曲线在有限域 Fp 上还是一个阿贝尔群。
 
