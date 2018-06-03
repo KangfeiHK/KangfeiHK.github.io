@@ -34,8 +34,7 @@ Merkle Tree 的特点就是底层任意一个节点发生变化，其父节点�
 
 下面以两笔交易为例，实现代码，可以看到在比特币中使用了[两次哈希](https://bitcoin.stackexchange.com/questions/6037/why-are-hashes-in-the-bitcoin-protocol-typically-computed-twice-double-computed)。
 
-
-```
+{% highlight python %}
 import hashlib
 
 def hash256(s):
@@ -51,8 +50,7 @@ mrkl_tree = dhash256(tx1+tx2)
 result=mrkl_tree[::-1].encode('hex')
 
 print result
-```
-
+{% endhighlight %}
 
 此外，[BitCoin technology Merkle tree](http://java-lang-programming.com/en/articles/29) 一文用 Java 较完整地实现了Merkle tree，可加深理解。
 

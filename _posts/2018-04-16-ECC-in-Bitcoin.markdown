@@ -31,11 +31,9 @@ RSA 加解密过程可以分为以下几步，首先用伪随机生成器生成 
 \\[ N = p * q \\]
 \\[ L = lcm(p-1,q-1) \\]
 
-然后还是通过伪随机生成器生成 E，使得满足条件 1 < E < L 并且 gcd(E,L) E 和 L 的最大公约数为1
+然后还是通过伪随机生成器生成 E，使得满足条件 1 < E < L 并且 gcd(E,L) E 和 L 的最大公约数为1，接着求数 D，使其满足：1 < D < L 并且 E * D mod L = 1。一旦发现了对大整数进行质因分解的高效算法，就可以对 RSA 进行破解。
 
-接着求数 D，使其满足：1 < D < L 并且 E * D mod L = 1
-
-一旦发现了对大整数进行质因分解的高效算法，就可以对 RSA 进行破解。
+上面只是对 RSA 做一个最基本的介绍，如果想要深入了解可以看这篇文章：[Prime Number Hide-and-Seek: How the RSA Cipher Works](http://www.muppetlabs.com/~breadbox/txt/rsa.html)
 
 ### 椭圆曲线密码学
 
