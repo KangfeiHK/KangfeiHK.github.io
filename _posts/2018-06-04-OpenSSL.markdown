@@ -1,0 +1,487 @@
+---
+layout:     post
+title:      "OpenSSL 入门指南"
+date:       2018-06-04
+author:     "K"
+header-img: "img/post-bg-markdown.jpg"
+tags:
+    - Cryptography
+---
+
+
+## OpenSSL 入门指南
+
+考虑到安全性以及便利性，我们往往通过加密库来实现加 / 解密算法，常见的有 OpenSSL ([官网](https://www.openssl.org/))、Libsodium（[文档](https://download.libsodium.org/doc/)）等，详细的比较可以参见维基 - [Comparison of cryptography libraries](https://en.wikipedia.org/wiki/Comparison_of_cryptography_libraries)。
+
+OpenSSL 是一个开源项目，其组成主要包括一下三个组件：
+- openssl：多用途的命令行工具
+- libcrypto：加密算法库
+- libssl：加密模块应用库，实现了 ssl 及 tls
+
+OpenSSL 命令行参数解释可以参考 [这里](https://www.openssl.org/docs/manmaster/man1/)，API 调用可以参考 [这里](https://www.openssl.org/docs/manmaster/man3/)，下面分别对哈希（以 MD5、Sha256 为例）、非对称算法（以 RSA 为例）进行实现。
+
+### 哈希值计算
+
+#### 在命令行计算字符串哈希
+
+{% highlight bash %}
+# 查看支持的哈希算法有 -md4、-md5、-ripemd160、-sha、-sha256 等
+openssl dgst -h
+
+openssl dgst [-md5|-md4|-md2|-sha1|-sha|-mdc2|-ripemd160|-dss1] [-c] [-d] [-hex] [-binary]
+       [-out filename] [-sign filename] [-keyform arg] [-passin arg] [-verify filename] [-prverify
+       filename] [-signature filename] [-hmac key] [file...]
+
+# -out filename：将加密的内容保存到指定文件中
+echo -n "helloworld" | openssl dgst -md5
+(stdin)= fc5e038d38a57032085441e7fe7010b0
+
+echo -n "helloworld" | openssl dgst -ripemd160
+(stdin)= 8a73c5438c28e79e696144fa869886f240cfaddb
+
+echo -n "helloworld" | openssl dgst -sha256
+(stdin)= 936a185caaa266bb9cbe981e9e05cb78cd732b0b3280eb944412bb6f8f8f07af
+
+# 查询 man echo，echo -n 表示 do not output the trailing newline （末尾不加换行符）
+
+# 注意区别，第一种方法会在字符串默认自动加上换行符，导致哈希值不同。
+# `xxd filename` 后可以看出文件结尾处会有个 0x0a 这个回车符
+
+$ echo "helloworld" | xxd
+00000000: 6865 6c6c 6f77 6f72 6c64 0a              helloworld.
+
+$ echo -n "helloworld" | xxd
+00000000: 6865 6c6c 6f77 6f72 6c64                 helloworld
+
+# 上式中如果不加 -n，那么（会自动加换行符）计算结果如下：
+echo "helloworld" | openssl dgst -sha256
+(stdin)= 8cd07f3a5ff98f2a78cfc366c13fb123eb8d29c1ca37c79df190425d5b9e424d
+{% endhighlight %}
+
+
+更多使用指导可参考文档：[Commands for OpenSSL - dgst](https://www.openssl.org/docs/manmaster/man1/dgst.html)
+
+
+#### 调用 EVP_Digest
+
+以 SHA256 为例，[API 注释](https://www.openssl.org/docs/manmaster/man3/EVP_DigestInit.html) 及源码示例如下：
+
+{% highlight C %}
+ #include <openssl/evp.h>
+
+ EVP_MD_CTX *EVP_MD_CTX_new(void);
+ int EVP_MD_CTX_reset(EVP_MD_CTX *ctx);
+ void EVP_MD_CTX_free(EVP_MD_CTX *ctx);
+ void EVP_MD_CTX_ctrl(EVP_MD_CTX *ctx, int cmd, int p1, void* p2);
+
+ // 该函数使用参数 impl 所指向的 ENGINE 设置该信息摘要结构体，参数 ctx 在调用本函数之前必须经过初始化。
+ // 参数 type 一般是使用象 EVP_sha1 这样的函数的返回值。如果 impl 为 NULL，那么就会使用缺省实现的信息摘要函数。
+ // 大多数应用程序里面 impl 是设置为 NULL 的。操作成功返回 1，否则返回 0。
+ int EVP_DigestInit_ex(EVP_MD_CTX *ctx, const EVP_MD *type, ENGINE *impl);
+ int EVP_DigestUpdate(EVP_MD_CTX *ctx, const void *d, size_t cnt);
+
+ // 本函数将 ctx 结构中的摘要信息数据返回到参数 md 中，如果参数 s 不是 NULL，那么摘要数据的长度（字节）就会被写入到参数 s 中，大多数情况下，写入的值是 EVP_MAX_MD_SIZE。
+ // 在调用本函数后，不能使用相同的 ctx 结构调用 EVP_DigestUpdate 再进行数据的信息摘要操作,
+ // 但是如果调用 EVP_DigestInit_ex 函数重新初始化后可以进行新的信息摘要操作。操作成功返回 1，否则返回 0。
+ int EVP_DigestFinal_ex(EVP_MD_CTX *ctx, unsigned char *md, unsigned int *s);
+ int EVP_DigestFinalXOF(EVP_MD_CTX *ctx, unsigned char *md, size_t len);
+
+ int EVP_MD_CTX_copy_ex(EVP_MD_CTX *out, const EVP_MD_CTX *in);
+
+ // 该函数初始化一个 EVP_MD_CTX 结构。该函数功能跟 EVP_DigestInit_ex 函数相同，但是 ctx 参数可以不用初始化，而且该函数只使用缺省实现的算法。
+ int EVP_DigestInit(EVP_MD_CTX *ctx, const EVP_MD *type);
+ // 该函数功能跟 EVP_DigestFinal_ex 函数相同，但是 ctx 结构会自动清除。一般来说，现在新的程序应该使用 EVP_DigestInit_ex 和 EVP_DigestFinal_ex 函数，
+ // 因为这些函数可以在使用完一个 EVP_MD_CTX 结构后，不用重新声明和初始化该结构就能使用它进行新的数据处理，而且新的带 _ex 的函数也可以使用非缺省的实现算法库。
+ int EVP_DigestFinal(EVP_MD_CTX *ctx, unsigned char *md, unsigned int *s);
+
+ int EVP_MD_CTX_copy(EVP_MD_CTX *out, EVP_MD_CTX *in);
+
+ int EVP_MD_type(const EVP_MD *md);
+ int EVP_MD_pkey_type(const EVP_MD *md);
+ int EVP_MD_size(const EVP_MD *md);
+ int EVP_MD_block_size(const EVP_MD *md);
+
+ const EVP_MD *EVP_MD_CTX_md(const EVP_MD_CTX *ctx);
+ int EVP_MD_CTX_size(const EVP_MD *ctx);
+ int EVP_MD_CTX_block_size(const EVP_MD *ctx);
+ int EVP_MD_CTX_type(const EVP_MD *ctx);
+
+ const EVP_MD *EVP_md_null(void);
+
+ const EVP_MD *EVP_get_digestbyname(const char *name);
+ const EVP_MD *EVP_get_digestbynid(int type);
+ const EVP_MD *EVP_get_digestbyobj(const ASN1_OBJECT *o);
+
+ // 清除一个信息摘要结构，该函数应该在一个信息摘要结构使用后不再需要的时候调用。
+ int EVP_MD_CTX_cleanup(EVP_MD_CTX *ctx);
+ // 清除信息摘要结构并释放所有分配的内存空间，只有使用 EVP_MD_CTX_create 函数创建的信息摘要结构才能使用该函数进行释放。
+ void EVP_MD_CTX_destroy(EVP_MD_CTX *ctx);
+
+
+// ------------------------------  Dividing line  ------------------------------------
+
+
+#include <stdio.h>
+#include <string.h>
+#include <openssl/evp.h>
+void  main(int argc, char *argv[])
+{
+     EVP_MD_CTX mdctx;
+     const EVP_MD *md;
+     char mess1[] = "hello";
+     char mess2[] = "world";
+     unsigned char md_value[EVP_MAX_MD_SIZE];
+     int md_len, i;
+
+     // 使 EVP_Digest 系列函数支持所有有效的信息摘要算法
+     OpenSSL_add_all_digests();
+     if(!argv[1]) {
+       printf("Usage: mdtest digestname\n");
+       exit(1);
+     }
+
+     // 根据输入的信息摘要函数的名字得到相应的 EVP_MD 算法结构
+     md = EVP_get_digestbyname(argv[1]);
+     if(!md) {
+       printf("Unknown message digest %s\n", argv[1]);
+       exit(1);
+     }
+
+     // 初始化信息摘要结构 mdctx，这在调用 EVP_DigestInit_ex 函数的时候是必须的。
+     EVP_MD_CTX_init(&mdctx);
+
+     // 使用 md 的算法结构设置 mdctx 结构，impl 为 NULL，即使用缺省实现的算法（openssl 本身提供的信息摘要算法）
+     EVP_DigestInit_ex(&mdctx, md, NULL);
+
+     // 开始真正进行信息摘要运算，可以多次调用该函数，处理更多的数据，这里只调用了两次
+     EVP_DigestUpdate(&mdctx, mess1, strlen(mess1));
+     EVP_DigestUpdate(&mdctx, mess2, strlen(mess2));
+
+     // 完成信息摘要计算过程，将完成的摘要信息存储在 md_value 里面, 长度信息存储在 md_len 里面
+     EVP_DigestFinal_ex(&mdctx, md_value, &md_len);
+
+     // 使用该函数释放 mdctx 占用的资源，如果使用 _ex 系列函数，这是必须调用的。
+     EVP_MD_CTX_cleanup(&mdctx);
+     printf("Digest is:");
+     for(i = 0; i < md_len; i++) printf("%02x", md_value[i]);
+     printf("\n");
+ }
+{% endhighlight %}
+
+运行结果如下：
+
+{% highlight bash %}
+$ gcc dem.c -o dem -lcrypto
+$ ./dem sha256
+Digest is: 936a185caaa266bb9cbe981e9e05cb78cd732b0b3280eb944412bb6f8f8f07af
+{% endhighlight %}
+
+{% highlight bash %}
+
+{% endhighlight %}
+
+
+### RSA 算法
+
+#### 在命令行计算
+
+命令参数解释：[openssl-rsa](https://www.openssl.org/docs/manmaster/man1/openssl-rsa.html)
+
+{% highlight bash %}
+// 生成一串 2048 位的明文密钥（contains both the private and public keys）
+openssl genrsa -out private.pem 2048
+
+// 转换为 DER 编码
+openssl rsa -in private.pem -outform der -out private.der
+
+// 使用 triple DES 对明文私钥文件进行密码保护
+openssl rsa -inform der -in private.der -des3 -out enckey.pem
+
+// 打印密钥信息
+openssl rsa -in private.pem -text -noout
+openssl rsa -in private.pem -text -modulus
+
+// 导出公钥，写入文件
+openssl rsa -in private.pem -pubout -out pubkey.pem
+
+// 打印公钥信息
+openssl rsa -pubin -in public.pem -text -modulus
+
+// Output the public part of a private key in RSAPublicKey format
+openssl rsa -in key.pem -RSAPublicKey_out -out pubkey.pem
+
+// 显示私钥信息，保护密钥写在 pwd.txt 中
+openssl rsa -in enckey.pem  -passin file:pwd
+
+// 下面演示对文件进行加解密，例如文件对象为 hello
+
+// 加密
+openssl rsautl -encrypt -inkey public.pem -pubin -in hello -out hello.ssl
+
+// 解密
+openssl rsautl -decrypt -inkey private.pem -in hello.ssl -out decrypted
+{% endhighlight %}
+
+
+#### 源码实现
+
+下面分别通过三种方式实现 RSA，
+
+{% highlight C %}
+
+// num 是模数比特数，e 是公钥指数，callback 回调函数由用户实现，用于干预密钥生成过程中的一些运算，可为空。
+// RSA_generate_key() returns a pointer to the RSA structure or NULL if the key generation fails.
+RSA *RSA_generate_key(int num, unsigned long e, void (*callback)(int, int, void *), void *cb_arg);
+
+
+// RSA_generate_key_ex() returns 1 on success or 0 on error
+int RSA_generate_key_ex(RSA *rsa, int bits, BIGNUM *e, BN_GENCB *cb);
+
+
+{% endhighlight %}
+
+完整代码如下：
+
+{% highlight C %}
+
+// 第一种 RSA_generate_key (Deprecated)
+
+#include <openssl/rsa.h>
+
+int main()
+{
+
+    int bits = 2048;
+    unsigned long e = RSA_3;
+    RSA *keypair = RSA_generate_key(bits, e, NULL, NULL);
+    if(NULL == keypair)
+    {
+        printf("RSA_generate_key failed\n");
+        return -1;
+    }
+
+    RSA_print_fp(stdout, keypair, 11);
+    RSA_free(keypair);
+
+     return 0;
+
+}
+
+--------------
+
+// 第二种 RSA_generate_key_ex
+
+#include <openssl/rsa.h>
+
+int main()
+{
+
+    int ret, bits = 1024;
+    RSA *keypair = RSA_new();
+
+    BIGNUM *bne = BN_new();
+    unsigned long e = RSA_3;
+
+    ret = BN_set_word(bne, e);
+    ret = RSA_generate_key_ex(keypair, bits, bne, NULL);
+
+    if(ret!=1)
+    {
+        printf("RSA_generate_key_ex failed!\n");
+        return -1;
+    }
+
+    RSA_print_fp(stdout, keypair, 11);
+    RSA_free(keypair);
+
+    return 0;
+
+}
+
+{% endhighlight %}
+
+如果从文件中读取密钥，可使用函数 PEM_read_bio_PrivateKey() / PEM_read_bio_PUBKEY();
+
+下面实现 RSA 加解密功能
+
+{% highlight C %}
+
+#include <openssl/rsa.h>
+
+// RSA_public_encrypt
+// RSA_public_encrypt() encrypts the flen bytes at from (usually a session key) using the public key rsa
+// and stores the ciphertext in to. to must point to RSA_size(rsa) bytes of memory.
+
+/* flen：the number of bytes to encrypt
+*  from：the message to encrypt
+*  to：the buffer to put the encrypted message
+*  rsa：the keypair to encrypt with
+*  padding：the type of padding to use for the message */
+
+// RSA_public_encrypt() returns the size of the encrypted data (i.e., RSA_size(rsa)).On error, -1 is returned.
+int RSA_public_encrypt(int flen, unsigned char *from,
+                        unsigned char *to, RSA *rsa, int padding);
+
+
+/* flen：the encrypted length
+*  from：the encrypted message
+*  to：the buffer to store the decrypted message in
+*  rsa：the key to perform decryption with
+*  padding：the padding type  */
+
+// RSA_public_decrypt() returns the size of the recovered message.
+int RSA_private_decrypt(int flen, unsigned char *from,
+                         unsigned char *to, RSA *rsa, int padding);
+
+{% endhighlight %}
+
+完整代码如下：
+
+{% highlight C %}
+
+#include <openssl/rsa.h>
+#include <string.h>
+int main()
+{
+    int ret, bits = 2048;       // 1024、2048、4096
+    unsigned long e = RSA_F4;    // RSA_F4(65537)、RSA_3（3）
+    RSA *keypair = RSA_new();
+    BIGNUM *bne = BN_new();
+    ret = BN_set_word(bne, e);
+
+    // generate rsa key
+    ret = RSA_generate_key_ex(keypair, bits, bne, NULL);
+    if (ret != 1)
+    {
+        printf("RSA_generate_key_ex failed!\n");
+        return -1;
+    }
+
+    //  RSA_print_fp(stdout, keypair, 3);
+
+    char *encrypted = malloc(RSA_size(keypair));
+    int padding = RSA_PKCS1_PADDING;
+    // char plainText[bits/8] = "This is my secret meggage: hello world";
+    char plainText[bits / 8];
+
+    // get encryped data
+    printf("Message to encrypt:");
+    fgets(plainText, bits - 1, stdin);
+    plainText[strlen(plainText) - 1] = '\0';
+
+    // encrypt
+    int encrypted_length = RSA_public_encrypt(strlen(plainText), plainText, encrypted, keypair, padding);
+    if (encrypted_length == -1)
+    {
+        printf("Public Encrypt failed!\n");
+    }
+    else
+    {
+        printf("Encrypted success, the length = %d\n", encrypted_length);
+    }
+
+    // decrypt
+    char *decrypted = malloc(RSA_size(keypair));
+    int decrypted_length = RSA_private_decrypt(encrypted_length, encrypted, decrypted, keypair, padding);
+    if (decrypted_length == -1)
+    {
+        printf("Public Decrypt failed!\n");
+    }
+    else
+    {
+        printf("Decrypted length = %d\n", decrypted_length);
+        printf("Decrypted message = %s\n", decrypted);
+    }
+
+    // free
+    RSA_free(keypair);
+    free(encrypted);
+    free(decrypted);
+    BN_free(bne);
+
+    return 0;
+}
+
+
+// ------------------------------  Dividing line  ------------------------------------
+
+
+#include <openssl/evp.h>
+#include <openssl/rsa.h>
+#include <string.h>
+
+int main()
+{
+    int ret, bits = 2048;
+    unsigned long e = RSA_F4; // 65537
+    RSA *keypair = RSA_new();
+    BIGNUM *bne = BN_new();
+    ret = BN_set_word(bne, e);
+
+    // generate rsa key
+    ret = RSA_generate_key_ex(keypair, bits, bne, NULL);
+
+    if (ret != 1)
+    {
+        printf("RSA_generate_key_ex failed!\n");
+        return -1;
+    }
+
+    char plainText[bits / 8];
+    char *encrypted = malloc(RSA_size(keypair));
+    char *decrypted = malloc(RSA_size(keypair));
+    size_t encrypt_length = bits / 8;
+    size_t decrypt_length = bits / 8;
+
+    // get encryped data
+    printf("Message to encrypt:");
+    fgets(plainText, bits / 8 - 1, stdin);
+    plainText[strlen(plainText) - 1] = '\0';
+
+    EVP_PKEY *pkey = NULL;
+
+    pkey = EVP_PKEY_new();
+    EVP_PKEY_assign_RSA(pkey, keypair);
+
+    // 加密
+    EVP_PKEY_CTX *ectx;
+    ectx = EVP_PKEY_CTX_new(pkey, NULL);
+    EVP_PKEY_encrypt_init(ectx);
+
+    int result = EVP_PKEY_encrypt(ectx, encrypted, &encrypt_length, plainText, strlen(plainText));
+
+    if (result == 1)
+    {
+        printf("Encrypted success!\n");
+    }
+    else
+    {
+        printf("Public Encrypt failed!\n");
+    }
+
+    // 解密
+    EVP_PKEY_CTX *dctx;
+    dctx = EVP_PKEY_CTX_new(pkey, NULL);
+    EVP_PKEY_decrypt_init(dctx);
+    result = EVP_PKEY_decrypt(dctx, decrypted, &decrypt_length, encrypted, encrypt_length);
+
+    if (result == 1)
+    {
+        printf("Decrypted message = %s\n", decrypted);
+    }
+    else
+    {
+        printf("Public Decrypt failed!\n");
+    }
+
+    EVP_PKEY_CTX_free(ectx);
+    EVP_PKEY_CTX_free(dctx);
+
+    EVP_PKEY_free(pkey);
+    BN_free(bne);
+
+    return 0;
+}
+
+{% endhighlight %}
+
