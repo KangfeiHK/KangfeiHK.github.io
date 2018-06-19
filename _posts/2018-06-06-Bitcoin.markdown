@@ -1,0 +1,350 @@
+---
+layout:     post
+title:      "浅析比特币原理"
+date:       2018-06-06
+author:     "K"
+header-img: "img/post-bg-markdown.jpg"
+tags:
+    - 比特币
+---
+
+之前零零碎碎写了几篇关于比特币的文章，本文在原先基础之上进行了整理和汇总，尽量做到概括性地介绍关于比特币的基础知识。下面以区块链中最基本的两个数据结构：区块和交易为出发点，逐步展开介绍。
+
+### 区块
+
+一个完整的[区块](https://en.bitcoin.it/wiki/Block#Block_structure)由 5 个部分组成，魔数、区块大小、区块头、交易数量、交易。
+
+| 字段 | 描述 | 大小 |
+| ------- | ---- | ----- |
+| Magic no   | value always 0xD9B4BEF9 | 4 bytes |
+| Blocksize   |T number of bytes following up to end of block | 4 bytes |
+| Blockheader   | consists of 6 items | 80 bytes |
+| Transaction counter   | positive integer VI = VarInt | 1 - 9 bytes  |
+| Transactions   | the (non empty) list of transactions	 | Transaction counter txs  |
+
+#### 哈希指针
+
+哈希指针除了普通指针具备的数据指向功能之外，还存有该指向数据的哈希值。因此，通过哈希指针不但可以获取指向的数据，还可以验证其完整性，判断数据是否被修改。哈希指针在区块链中有两个应用，一个是在区块头部添加上一个区块的哈希指针，形成区块链的链式结构（图示如下）：
+
+![](https://camo.githubusercontent.com/17b4893975e0c665d97d054bc76551894f375fdc/687474703a2f2f6c6561726e696e6773706f742e616c74657276697374612e6f72672f77702d636f6e74656e742f75706c6f6164732f323031362f31312f626c6f636b636861696e5f74616d7065725f747269616c322d373638783334322e706e67)
+
+还有一个是默克尔树中的应用，通过哈希指针将单个区块中的交易集合两两配对，从下至上压缩成单个哈希值，即默克尔树根（图示如下）：
+
+![](/img/in-post/Bitcoin/MerkleTree.png)
+
+> [hash versus hash pointer](https://bitcoin.stackexchange.com/questions/44213/hash-versus-hash-pointer)
+
+### 区块头
+
+下面先从区块头的字段说起，Bitcoin 源码中 CBlockHeader 头文件中定义如下：
+
+{% highlight C %}
+/** Nodes collect new transactions into a block, hash them into a hash tree,
+ * and scan through nonce values to make the block's hash satisfy proof-of-work
+ * requirements.  When they solve the proof-of-work, they broadcast the block
+ * to everyone and the block is added to the block chain.  The first transaction
+ * in the block is a special one that creates a new coin owned by the creator
+ * of the block.
+ */
+
+// header
+int32_t nVersion;           // 4 字节  Version
+uint256 hashPrevBlock;      // 32 字节 Previous block header hash
+uint256 hashMerkleRoot;     // 32 字节 Merkle root hash
+uint32_t nTime;             // 4 字节  Time
+uint32_t nBits;             // 4 字节  Target
+uint32_t nNonce;            // 4 字节  Nonce
+{% endhighlight %}
+
+其中 hashPrevBlock 是前一个区块的标识，即区块头哈希，也正是因为这个哈希指针，才使得顺序产生的单个区块能够形成连接。有了链的概念，才能更好地理解主链、分支等。hashMerkleRoot 是当前区块中默克尔树根，由交易集合依次哈希形成，主要起校验作用，其结构保证了任意一个交易发生变化都将导致结果变化。
+
+#### Merkle Tree 结构
+
+Merkle Tree（默克尔树）的结构如下所示，它允许将大量数据压缩成单个哈希值，常常用于数据的完整性校验。默克尔树的叶子节点是文件的哈希值，非叶子节点是由直接下层的两个哈希值拼接后再次哈希得到。循环计算，直至得到根节点（Merkle root）。
+
+Merkle Tree 的特点就是底层任意一个节点发生变化，其父节点直至根节点经过的所有节点，都会发生变化。与 Hash list 相比，虽然两者都能校验最终文件的完整性，且能在验证的情况下花费最小代价重新下载文件块，但是默克尔树能够在下载单个分支的文件后立即对其进行验证。
+
+在比特币中，Merkle root 是在所有交易数据哈希值的基础上多次哈希得到，并且最终保存在 block header 中。下面以两笔交易为例，展示计算 Merkle tree 的过程：
+
+{% highlight python %}
+import hashlib
+
+def hash256(s):
+  return hashlib.new('sha256', s).digest()
+
+def dhash256(s):
+  return hash256(hash256(s))
+
+tx1="3a459eab5f0cf8394a21e04d2ed3b2beeaa59795912e20b9c680e9db74dfb18c".decode('hex')[::-1]
+tx2="be38f46f0eccba72416aed715851fd07b881ffb7928b7622847314588e06a6b7".decode('hex')[::-1]
+
+mrkl_tree = dhash256(tx1+tx2)
+result=mrkl_tree[::-1].encode('hex')
+
+print result
+{% endhighlight %}
+
+此外，[BitCoin technology Merkle tree](http://java-lang-programming.com/en/articles/29) 一文用 Java 较完整地实现了 Merkle tree，可加深理解。
+
+#### nNonce 和 nBits
+
+参数 nNonce、nBits 和挖矿直接相关，这里一并解释。挖矿的目的就是不断产生新的区块，使之收集并发布最近发生的交易，从而延长区块链。在达成最大总量（比特币为 2100 万）之前，新的货币都是通过挖矿产生。挖矿一词其实比较抽象，其本质上是一个数学计算过程，即找到一个随机数 nNonce 使得其符合 nBits 难度要求。简化的公式如下：
+
+\\[SHA256(SHA256(Block_Header)) \leqslant Target \\]
+
+通俗地讲，即不断尝试 nNonce 的值，使得新生成的区块头哈希（比特币中采用两次 sha256）值必须小于等于指定难度值，才能被网络接受。不等式两边的值都是 256 位，作大整数可直接比较大小。为了节省存储空间，区块链中不存储 256 位的难度值 target，而是 32 位的 nBits。由于哈希函数产生的 hash 值是随机的，因此 target 越小，符合要求的哈希值空间占总空间的比重也就越小，即代表挖矿的难度越大。工作量证明 POW 共识也因此命名。在比特币的创世区块源码中可以看到这句代码：
+
+{% highlight C %}
+// src/chainparams.cpp
+genesis = CreateGenesisBlock(1231006505, 2083236893, 0x1d00ffff, 1, 50 * COIN);
+{% endhighlight %}
+
+参数中 nbits 字段的值为 0x1d00ffff，前面解释过，这是 ‘compact’ 格式的 target，两者等价。nbits 字段的前 2 位十六进制数字为幂，接下来得 6 位为系数。在这个区块里，0x1d 为幂（exponent ），而 0x00ffff 为系数（coefficient），难度的计算公式：
+
+```
+target = coefficient * 256^(exponent – 3)
+```
+
+表示为 0x00ffff0000000000000000000000000000000000000000000000000000 （29 个字节），这个目标值是最大的 target，也被称为难度值（difficulty）为 1 的 target。这里有一个区别，矿池难度 1 和 比特币客户端难度 1 不同，前者除了前 32 位为 0，后面保留全 F，而在比特币客户端中为 0x00000000ffff0000000000000000000000000000000000000000000000000000
+
+为了保证每 10 分钟产生一个新的区块，比特币会每 2016 个块（理想状态下为两周）自动调整一下 target 的值，调整公式如下：
+
+\\[target_{new}=\frac{target_{2016}}{2 weeks}*target \\]
+
+其中 target(2016) 表示生成前面 2016 个块所花费的时间，当花费的时间越短, 新生成的 target 值也就越小，表明难度增大，target 表示当前的目标值。
+
+在比特币源码 src/pow.cpp 中 CalculateNextWorkRequired 函数中，有如下代码段：
+
+{% highlight C %}
+if (nActualTimespan < params.nPowTargetTimespan/4)
+    nActualTimespan = params.nPowTargetTimespan/4;
+if (nActualTimespan> params.nPowTargetTimespan*4)
+    nActualTimespan = params.nPowTargetTimespan*4;
+{% endhighlight %}
+
+可见在单次调整中，限制最大幅度为 4 倍，因此，如果出现算力大幅度变化的情况可能需要数次调整才能达到平衡状态。
+
+> [深度解析挖矿的逻辑和技术实现](https://bitcointalk.org/index.php?topic=3117000.0)
+
+### 交易
+
+相比区块，交易是比特币系统的更小信息载体。以最常见的交易类型（Pay to Pubkey Hash）为例，由 N 个输入、M 个输出构成。Bitcoin 源码中 [transaction 头文件](https://github.com/bitcoin/bitcoin/blob/2d071f5a7055f85d1c7d92de43646663a03a8fce/src/primitives/transaction.h)中定义如下
+
+{% highlight C %}
+/** The basic transaction that is broadcasted on the network and contained in
+ * blocks.  A transaction can contain multiple inputs and outputs.
+ */
+
+class CTransaction
+{
+    // The local variables are made const to prevent unintended modification
+    // without updating the cached hash value. However, CTransaction is not
+    // actually immutable; deserialization and assignment are implemented,
+    // and bypass the constness. This is safe, as they update the entire
+    // structure, including the hash.
+
+    const std::vector<CTxIn> vin;
+    const std::vector<CTxOut> vout;
+    const int32_t nVersion;
+    const uint32_t nLockTime;
+    ....
+}
+{% endhighlight %}
+
+详细地可参见下图：
+
+![](/img/in-post/Bitcoin/Transaction_Data.png)
+
+输入：除了创币交易之外，所有的交易中输入必须引用之前的某一个交易输出。这是因为比特币网络中没有账户余额这一概念，取代的是 UTXO 模型。具体地根据 TXID 找到指定交易，并通过 VOUT 索引查找指定的交易输出。每一个输出由锁定脚本锁定，因此要想花费之前的输出，必须先提供解锁脚本（unlocking script），也叫 ScriptSig。只有持有者拥有能力解锁，因此保证了资产的安全。
+
+{% highlight C %}
+/** An input of a transaction.  It contains the location of the previous
+ * transaction's output that it claims and a signature that matches the
+ * output's public key.
+ */
+
+class CTxIn
+{
+public:
+    COutPoint prevout;
+    CScript scriptSig;
+    uint32_t nSequence;
+    CScriptWitness scriptWitness; //! Only serialized through CTransaction
+    ....
+}
+{% endhighlight %}
+
+输出：在输出中，必须指定交易的金额（以聪为单位），此外还有一个锁定脚本 ScriptPubKey。当一个输出被新的输入引用时，该输出全部被花费，金额多余支付可指定多个输出，实现找零。
+
+{% highlight C %}
+/** An output of a transaction.  It contains the public key that the next input
+ * must be able to sign with to claim it.
+ */
+class CTxOut
+{
+public:
+    CAmount nValue;
+    CScript scriptPubKey;
+    ....
+}
+{% endhighlight %}
+
+lock_time 是一个多意字段，表示在某个高度的 Block 之前或某个时间点之前该交易处于锁定态，无法收录进 Block。
+
+| 值 | 含义 |
+| ------- | ---- |
+| 0    | 立即生效 |
+| < 500000000    | 含义为 Block 高度，处于该 Block 之前为锁定（不生效） |
+| >= 500000000   | 含义为 Unix 时间戳，处于该时刻之前为锁定（不生效） |
+
+若该笔交易的所有输入交易的 sequence 字段，均为 INT32 最大值 (0xffffffff)，则忽略 lock_time 字段。否则，该交易在未达到 Block 高度或达到某个时刻之前，是不会被收录进 Block 中的。
+
+那什么是锁定脚本和解锁脚本呢？其实就是命令和参数的组合。例如
+
+![](/img/in-post/Bitcoin/script.jpeg)
+
+{% highlight C %}
+
+// 以下面这段 locking script 为例
+76a914977ae6e32349b99b72196cb62b5ef37329ed81b488ac
+
+// 在网站查询代号：https://en.bitcoin.it/wiki/Script
+76 == OP_DUP、a9 == OP_HASH160、14 == Bytes to push
+88 == OP_EQUALVERIFY、ac == OP_CHECKSIG
+
+977ae6e32349b99b72196cb62b5ef37329ed81b4 == Address (decoded)
+{% endhighlight %}
+
+脚本完整的执行过程如下图所示：
+
+![](/img/in-post/Bitcoin/script01.jpg)
+
+![](/img/in-post/Bitcoin/script02.jpg)
+
+可以看出解锁脚本运行过程，主要是入栈，锁定脚本运行过程（主要是出栈），如果最后返回的结果为真，说明交易有效。
+
+在交易模块，还有一些细节没有展开说明，例如比特币中的地址，以及签名的验证都是独立，以后在单独的文章中进行介绍。
+
+#### 示例
+
+下面以区块 Block #521800（May 9, 2018 3:38:40 AM）为例，为了演示方便，省略其中大部分交易，以省略号替代。数据从站点 [Bitcoin API JSON-RPC](http://chainquery.com/bitcoin-api/getblock/00000000000000000037e01f791a844866cb4ee585f857a26c05ccd7a692524a%20/true) 获取，也可以从客户端通过命令 `bitcoind getblock 00000000000000000037e01f791a844866cb4ee585f857a26c05ccd7a692524a` 获取。
+
+```
+{
+    "result": {
+        "hash": "00000000000000000037e01f791a844866cb4ee585f857a26c05ccd7a692524a",
+        "confirmations": 5951,
+        "strippedsize": 263908,
+        "size": 332631,
+        "weight": 1124355,
+        "height": 521800,
+        "version": 536870912,
+        "versionHex": "20000000",
+        "merkleroot": "09a1ce1fab00526d1ee42f626ba44f5fcefc209b5816c2c8d21e6ada2765d8d2",
+        "tx": [
+            "733d11251eb98dec077040c36e8b6431dcdc7d3fb721976fea22997b0b64abda",
+            "1d2cce9fb93ae721f187402f06a5d4a840da33c1525d9a175865151abd084891",
+            "bdf2d7a6eb1423d43b40059907f62e96bb40a194c89069d3213f2553633dba34",
+            "b34bade35ccfe362d623ee1b15f0b82cb0ae7af726b55d25a25c1c12fdeff4e3",
+            "92ed0a741a8eb05f3e7a35bf431eba034303407a131271aba3b17aab6b577e86",
+            "f6a73b9e0ca0a4bd5fa74452a260e7557eaa95b24a709dc975f81cf19546d6ed",
+            "48e8105f6e61a6f074e06cff1ac9fb9a9d43c131686fbf749360b6a312a52cb6",
+            "10f42461209d37d8ea76dc63c6fa6cac4d0ea940601673151cb46b1c395e3c7e",
+            "08c883114785221e94a6f806b3984f0d1a94f1befcfa639338ace36a75d14880",
+            "d930cc0c8b7ae33ed19f9103c3a12935cc731da939dc74f6ddc0d22a2823c9be",
+            "45c1f004facdc64322dd20924a33da6f60139e176c6fd620cb126cd2888e34d8",
+            ....... // 省略
+        ],
+        "time": 1525808320,
+        "mediantime": 1525806392,
+        "nonce": 2454762231,
+        "bits": "1745fb53",
+        "difficulty": 4022059196164.954,
+        "chainwork": "000000000000000000000000000000000000000001b2531a8c1c2e51fc0d52d0",
+        "previousblockhash": "000000000000000000115f728bb8f53ec6ca337675d995aa964eeda55218a0e7",
+        "nextblockhash": "0000000000000000004413951aa6a8feb9a0da60bee203d1dc6d8ba4f208e014"
+    },
+    "error": null,
+    "id": null
+}
+```
+
+本章节关注交易数据结构的字段组成，因此更细一步，以 [第十笔交易](https://blockexplorer.com/tx/45c1f004facdc64322dd20924a33da6f60139e176c6fd620cb126cd2888e34d8)，该交易的 Hash 为 `45c1f004facdc64322dd20924a33da6f60139e176c6fd620cb126cd2888e34d8` 为例继续研究。该交易的永久链接为：[https://live.blockcypher.com/btc/block/521800/10/](https://live.blockcypher.com/btc/block/521800/10/)，在站点执行 [Command: getrawtransaction](http://chainquery.com/bitcoin-api/getrawtransaction/45c1f004facdc64322dd20924a33da6f60139e176c6fd620cb126cd2888e34d8/0) 后得到结果如下：
+
+```
+// 原始命令为
+// bitcoind getrawtransaction e8f08d7f519eb863a68cf292ca51dbab7c9b49f50a96d13f2db32e432db363e 1
+
+// 传参为 0
+{
+    "result": "0200000001d7e140293ee11269a33577a2ecd15d565dfc283095eee3126ba44fe2adf2a1e9010000006a47304402205765950e73ca24bdb5784bfb99873332cd9866e0ae6132d4e4eee45b8a482436022058c84884eb834a8059e0617edd52c053454507f472651a04d85dc444790451a6012102fbc5d38670f8c55fea554a3153a3bb791601902d074cf0c56b0efd8f147d4732ffffffff01302dfa020000000017a914a8cc8bfc158b76d23f85261336c2857785d7a2618700000000",
+    "error": null,
+    "id": null
+}
+
+// 通过修改参数为 decoded，则可以得到如下数据：
+{
+    "result": {
+        "txid": "45c1f004facdc64322dd20924a33da6f60139e176c6fd620cb126cd2888e34d8",
+        "hash": "45c1f004facdc64322dd20924a33da6f60139e176c6fd620cb126cd2888e34d8",
+        "version": 2,
+        "size": 189,
+        "vsize": 189,
+        "locktime": 0,
+        "vin": [
+            {
+                    "txid": "e9a1f2ade24fa46b12e3ee953028fc5d565dd1eca27735a36912e13e2940e1d7",
+                "vout": 1,
+                "scriptSig": {
+                    "asm": "304402205765950e73ca24bdb5784bfb99873332cd9866e0ae6132d4e4eee45b8a482436022058c84884eb834a8059e0617edd52c053454507f472651a04d85dc444790451a6[ALL] 02fbc5d38670f8c55fea554a3153a3bb791601902d074cf0c56b0efd8f147d4732",
+                    "hex": "47304402205765950e73ca24bdb5784bfb99873332cd9866e0ae6132d4e4eee45b8a482436022058c84884eb834a8059e0617edd52c053454507f472651a04d85dc444790451a6012102fbc5d38670f8c55fea554a3153a3bb791601902d074cf0c56b0efd8f147d4732"
+                },
+                "sequence": 4294967295
+            }
+        ],
+        "vout": [
+            {
+                "value": 0.49950000,
+                "n": 0,
+                "scriptPubKey": {
+                    "asm": "OP_HASH160 a8cc8bfc158b76d23f85261336c2857785d7a261 OP_EQUAL",
+                    "hex": "a914a8cc8bfc158b76d23f85261336c2857785d7a26187",
+                    "reqSigs": 1,
+                    "type": "scripthash",
+                    "addresses": [
+                        "3H5YUw5MCYMyfjdzv1BmDcjtrqUBSok3e4"
+                    ]
+                }
+            }
+        ],
+        "hex": "0200000001d7e140293ee11269a33577a2ecd15d565dfc283095eee3126ba44fe2adf2a1e9010000006a47304402205765950e73ca24bdb5784bfb99873332cd9866e0ae6132d4e4eee45b8a482436022058c84884eb834a8059e0617edd52c053454507f472651a04d85dc444790451a6012102fbc5d38670f8c55fea554a3153a3bb791601902d074cf0c56b0efd8f147d4732ffffffff01302dfa020000000017a914a8cc8bfc158b76d23f85261336c2857785d7a2618700000000",
+        "blockhash": "00000000000000000037e01f791a844866cb4ee585f857a26c05ccd7a692524a",
+        "confirmations": 5953,
+        "time": 1525808320,
+        "blocktime": 1525808320
+    },
+    "error": null,
+    "id": null
+}
+```
+
+更深一步，查看 api [如下](https://api.blockcypher.com/v1/btc/main/txs/45c1f004facdc64322dd20924a33da6f60139e176c6fd620cb126cd2888e34d8?limit=50&includeHex=true)，hex 字段存储了 raw transaction，下面分析一下：
+
+```
+0200000001d7e140293ee11269a33577a2ecd15d565dfc283095eee3126ba44fe2adf2a1e9010000006a47304402205765950e73ca24bdb5784bfb99873332cd9866e0ae6132d4e4eee45b8a482436022058c84884eb834a8059e0617edd52c053454507f472651a04d85dc444790451a6012102fbc5d38670f8c55fea554a3153a3bb791601902d074cf0c56b0efd8f147d4732ffffffff01302dfa020000000017a914a8cc8bfc158b76d23f85261336c2857785d7a2618700000000，共378个字，在这个网站 [blockcypher](https://live.blockcypher.com/btc/decodetx/) 可以将字符串解析为 Json 格式
+
+- 020000：4 bytes，版本号的 Little-Endian（反序）格式
+- 01：1 byte，transaction input 的数量
+- d7e140293ee11269a33577a2ecd15d565dfc283095eee3126ba44fe2adf2a1e9：32 字节，transaction hash，代表着我们准备要花掉的那笔 transaction output，解析出来（其实就是 reverse order）可以看到真实字段 prev_hash": "e9a1f2ade24fa46b12e3ee953028fc5d565dd1eca27735a36912e13e2940e1d7
+- 01000000：4 个字节，指定花费上一个 transaction 的第几个 output
+- 6a：1 byte，unlocking script 的长度，换成 10 进制为 106
+- 47304402205765950e73ca24bdb5784bfb99873332cd9866e0ae6132d4e4eee45b8a482436022058c84884eb834a8059e0617edd52c053454507f472651a04d85dc444790451a6012102fbc5d38670f8c55fea554a3153a3bb791601902d074cf0c56b0efd8f147d4732：106 bytes 的 unlocking script，拥有者对该交易的 ECDSA 签名认可
+- ffffffff：4 bytes 的 sequence，转换成 10 进制就是 4294967295
+- 01：1 byte 为 transaction output 的数量
+- 302dfa0200000000：8 bytes，第一个output 交易的金额，需要逆序转换（reverse order），即 0000000002fa2d30，然后再转成 10 进制 49950000
+- 17：1 byte，locking script 的长度，换成 10 进制为 23
+- a914a8cc8bfc158b76d23f85261336c2857785d7a26187，23 bytes 的 locking script，接收方的公钥脚本
+- 00000000：1 byte，locktime = 0
+```
+
+> [Developer Guide: Transactions](https://bitcoin.org/en/developer-guide#transactions)
