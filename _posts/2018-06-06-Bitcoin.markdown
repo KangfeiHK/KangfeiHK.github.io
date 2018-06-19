@@ -1,7 +1,7 @@
 ---
 layout:     post
 title:      "浅析比特币原理"
-date:       2018-06-06
+date:       2018-05-11
 author:     "K"
 header-img: "img/post-bg-markdown.jpg"
 tags:
@@ -12,7 +12,7 @@ tags:
 
 ### 区块
 
-一个完整的[区块](https://en.bitcoin.it/wiki/Block#Block_structure)由 5 个部分组成，魔数、区块大小、区块头、交易数量、交易。
+一个完整的 [区块](https://en.bitcoin.it/wiki/Block#Block_structure) 由 5 个部分组成，魔数、区块大小、区块头、交易数量、交易。
 
 | 字段 | 描述 | 大小 |
 | ------- | ---- | ----- |
@@ -84,6 +84,35 @@ result=mrkl_tree[::-1].encode('hex')
 print result
 {% endhighlight %}
 
+利用 OpenSSL 加密算法库实现默克尔树根的计算
+
+{% highlight bash %}
+// 假设已有两个交易的 hash 值如下：
+3a459eab5f0cf8394a21e04d2ed3b2beeaa59795912e20b9c680e9db74dfb18c
+be38f46f0eccba72416aed715851fd07b881ffb7928b7622847314588e06a6b7
+
+// 那么首先进行按字节逆转
+$ echo -n "3a459eab5f0cf8394a21e04d2ed3b2beeaa59795912e20b9c680e9db74dfb18c" | tac -rs .. | echo "$(tr -d'\n')"
+8cb1df74dbe980c6b9202e919597a5eabeb2d32e4de0214a39f80c5fab9e453a
+b7a6068e5814738422768b92b7ff81b807fd515871ed6a4172bacc0e6ff438be
+
+// 计算 sha256(sha256(h1 . h2))
+echo -n "8cb1df74dbe980c6b9202e919597a5eabeb2d32e4de0214a39f80c5fab9e453ab7a6068e5814738422768b92b7ff81b807fd515871ed6a4172bacc0e6ff438be" \ | xxd -r -p | openssl dgst -sha256
+
+// 得到第一步 哈希结果
+747ac9814124817f156b7492637a84f4c404b6afb91650cae1b34b086de74115
+
+// 再一次进行 sha256 哈希计算
+echo -n "747ac9814124817f156b7492637a84f4c404b6afb91650cae1b34b086de74115" \ | xxd -r -p | openssl dg
+st -sha256
+
+// 得到结果如下
+2dd3ce205cf8d03f773d46d24becfd72c766deaa0d1327d7e4c810265f59a313
+
+// 最后一步，同样需要按字节逆转
+13a3595f2610c8e4d727130daade66c772fdec4bd2463d773fd0f85c20ced32d
+{% endhighlight %}
+
 此外，[BitCoin technology Merkle tree](http://java-lang-programming.com/en/articles/29) 一文用 Java 较完整地实现了 Merkle tree，可加深理解。
 
 #### nNonce 和 nBits
@@ -126,9 +155,108 @@ if (nActualTimespan> params.nPowTargetTimespan*4)
 
 > [深度解析挖矿的逻辑和技术实现](https://bitcointalk.org/index.php?topic=3117000.0)
 
+#### Little endian
+
+比特币中很多地方提到了小端字节序（Little endian）的概念，为了保证准确性，下面直接粘贴解释的原文，说明了什么是字节序，以及大小端的区别：
+
+The endianness refers to the order that bytes are stored when storing multi byte values such as Integers and Doubles this is also known as the byte order. The endianness does not have any meaning when you consider a single byte that is stored, and it is the same for both Big-endian and Little-endian. But when you consider values that span multiple bytes then the byte order is very important since you might read incorrect values if you read assuming a wrong byte order.
+
+**Big-endian** The most significant end is stored first. To understand this lets take an example of a hexadecimal value 324F with the big-endian system this will stored in the memory as 324F that is if we consider memory addresses 32 would be stored in memory address 1 and 4F would be stored in memory address 2.
+
+**Little-endian** The least significant end is stored first. Again going by the same example 324F, this would be saved in memory as 4F32 that is 4F would be saved in memory address 1 and 32 would be saved in memory address 2.
+
+C 语言检测机器中采用哪种方式储存
+{% highlight C %}
+int i = 1;
+
+if (*(char *)&num == 1) // 读取第一个字节的值
+{
+        printf("Little-Endian\n");
+}
+else
+{
+       printf("Big-Endian\n");
+}
+
+// -------
+// 下面再举一个例子：十六进制数 4F320103 转换成十进制为 1328677123
+// 那么
+
+uint32_t  num = 1328677123;
+
+printf("Value = %d \n", f, *(char *)&num);
+printf("Value = %d \n", f, *((char *)&num+1));
+printf("Value = %d \n", f, *((char *)&num+2));
+printf("Value = %d \n", f, *((char *)&num+3));
+
+// 结果是 3，1，50，79，正是倒序存储
+{% endhighlight %}
+
+下面开始读取 big endian & little endian
+{% highlight C %}
+// write 4 big endian bytes
+static void write_be(uint8_t* data, uint32_t x)
+{
+    data[0] = x >> 24;
+    data[1] = x >> 16;
+    data[2] = x >> 8;
+    data[3] = x;
+}
+
+
+// read 4 big endian bytes
+static uint32_t read_be(const uint8_t* data)
+{
+    return (((uint32_t)data[0]) << 24) |
+           (((uint32_t)data[1]) << 16) |
+           (((uint32_t)data[2]) << 8) |
+           (((uint32_t)data[3]));
+}
+
+// 小端字节序读取
+int m = 1;
+int sum;
+sum += *(char *)&m | *((char *)&m + 1)<<8 | *((char *)&m + 2)<<16 | *((char *)&m + 3) << 24;
+
+// 结果 sum 也是 1.
+{% endhighlight %}
+
+那么如何实现大小端的转换：
+
+```
+// Example
+12345678
+// Swap each pair of characters (starting from the right)…
+21436587
+// Reverse the whole thing…
+78563412
+```
+
+方法一：
+
+{% highlight bash %}
+# Here's how you can swap endianness on the command line (using grep to match every 2 characters, tac to reverse the order,
+# then tr to remove the line breaks to give you a string):
+
+$ echo 12345678 | grep -o .. | tac | echo $(tr -d '\n')
+{% endhighlight %}
+
+方法二：
+
+{% highlight PHP %}
+// converts a string to little-endian PHP
+$string = 12345678;
+$little-endian = implode('', array_reverse(str_split($string, 2)));
+echo $little-endian;
+{% endhighlight %}
+
+在上面的默克尔树根计算过程中，以及下面的交易模块，都有大量用到了 Little endian，因此单独列出了介绍一下。
+
+> [Reading and Writing Binary files in java - Converting Endianness](https://pulasthisupun.blogspot.com/2016/06/reading-and-writing-binary-files-in.html)
+
 ### 交易
 
-相比区块，交易是比特币系统的更小信息载体。以最常见的交易类型（Pay to Pubkey Hash）为例，由 N 个输入、M 个输出构成。Bitcoin 源码中 [transaction 头文件](https://github.com/bitcoin/bitcoin/blob/2d071f5a7055f85d1c7d92de43646663a03a8fce/src/primitives/transaction.h)中定义如下
+相比区块，交易是比特币系统的更小信息载体。以最常见的交易类型（Pay to Pubkey Hash）为例，由 N 个输入、M 个输出构成。Bitcoin 源码中 [transaction 头文件](https://github.com/bitcoin/bitcoin/blob/2d071f5a7055f85d1c7d92de43646663a03a8fce/src/primitives/transaction.h) 中定义如下
 
 {% highlight C %}
 /** The basic transaction that is broadcasted on the network and contained in
@@ -331,17 +459,17 @@ lock_time 是一个多意字段，表示在某个高度的 Block 之前或某个
 更深一步，查看 api [如下](https://api.blockcypher.com/v1/btc/main/txs/45c1f004facdc64322dd20924a33da6f60139e176c6fd620cb126cd2888e34d8?limit=50&includeHex=true)，hex 字段存储了 raw transaction，下面分析一下：
 
 ```
-0200000001d7e140293ee11269a33577a2ecd15d565dfc283095eee3126ba44fe2adf2a1e9010000006a47304402205765950e73ca24bdb5784bfb99873332cd9866e0ae6132d4e4eee45b8a482436022058c84884eb834a8059e0617edd52c053454507f472651a04d85dc444790451a6012102fbc5d38670f8c55fea554a3153a3bb791601902d074cf0c56b0efd8f147d4732ffffffff01302dfa020000000017a914a8cc8bfc158b76d23f85261336c2857785d7a2618700000000，共378个字，在这个网站 [blockcypher](https://live.blockcypher.com/btc/decodetx/) 可以将字符串解析为 Json 格式
+0200000001d7e140293ee11269a33577a2ecd15d565dfc283095eee3126ba44fe2adf2a1e9010000006a47304402205765950e73ca24bdb5784bfb99873332cd9866e0ae6132d4e4eee45b8a482436022058c84884eb834a8059e0617edd52c053454507f472651a04d85dc444790451a6012102fbc5d38670f8c55fea554a3153a3bb791601902d074cf0c56b0efd8f147d4732ffffffff01302dfa020000000017a914a8cc8bfc158b76d23f85261336c2857785d7a2618700000000，共 378 个字，在这个网站 [blockcypher](https://live.blockcypher.com/btc/decodetx/) 可以将字符串解析为 Json 格式
 
 - 020000：4 bytes，版本号的 Little-Endian（反序）格式
 - 01：1 byte，transaction input 的数量
-- d7e140293ee11269a33577a2ecd15d565dfc283095eee3126ba44fe2adf2a1e9：32 字节，transaction hash，代表着我们准备要花掉的那笔 transaction output，解析出来（其实就是 reverse order）可以看到真实字段 prev_hash": "e9a1f2ade24fa46b12e3ee953028fc5d565dd1eca27735a36912e13e2940e1d7
+- d7e140293ee11269a33577a2ecd15d565dfc283095eee3126ba44fe2adf2a1e9：32 字节，transaction hash，代表着我们准备要花掉的那笔 transaction output，解析出来（其实就是 reverse order）可以看到真实字段 prev_hash":"e9a1f2ade24fa46b12e3ee953028fc5d565dd1eca27735a36912e13e2940e1d7
 - 01000000：4 个字节，指定花费上一个 transaction 的第几个 output
 - 6a：1 byte，unlocking script 的长度，换成 10 进制为 106
 - 47304402205765950e73ca24bdb5784bfb99873332cd9866e0ae6132d4e4eee45b8a482436022058c84884eb834a8059e0617edd52c053454507f472651a04d85dc444790451a6012102fbc5d38670f8c55fea554a3153a3bb791601902d074cf0c56b0efd8f147d4732：106 bytes 的 unlocking script，拥有者对该交易的 ECDSA 签名认可
 - ffffffff：4 bytes 的 sequence，转换成 10 进制就是 4294967295
 - 01：1 byte 为 transaction output 的数量
-- 302dfa0200000000：8 bytes，第一个output 交易的金额，需要逆序转换（reverse order），即 0000000002fa2d30，然后再转成 10 进制 49950000
+- 302dfa0200000000：8 bytes，第一个 output 交易的金额，需要逆序转换（reverse order），即 0000000002fa2d30，然后再转成 10 进制 49950000
 - 17：1 byte，locking script 的长度，换成 10 进制为 23
 - a914a8cc8bfc158b76d23f85261336c2857785d7a26187，23 bytes 的 locking script，接收方的公钥脚本
 - 00000000：1 byte，locktime = 0
