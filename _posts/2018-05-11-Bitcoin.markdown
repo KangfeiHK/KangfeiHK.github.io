@@ -8,7 +8,7 @@ tags:
     - 比特币
 ---
 
-之前零零碎碎写了几篇关于比特币的文章，本文在原先基础之上进行了整理和汇总，尽量做到概括性地介绍关于比特币的基础知识。下面以区块链中最基本的两个数据结构：区块和交易为出发点，逐步展开介绍。
+之前零零碎碎写了几篇关于比特币的文章，本文在原先基础之上进行了整理和汇总，尽量做到概括性地介绍关于比特币的基础知识。下面以区块链中最基本的两个数据结构：区块和交易为出发点，逐步展开介绍。全文包括以下内容：区块的组成，哈希指针的特性，区块头内各字段解析，Merkle Tree 结构及 Merkle Tree Root 计算，nNonce 和 nBits、target、difficulty 关系，Little endian 基本介绍。交易数据结构的组成，其中脚本的执行过程及示例等。
 
 ### 区块
 
@@ -63,6 +63,40 @@ uint32_t nNonce;            // 4 字节  Nonce
 Merkle Tree（默克尔树）的结构如下所示，它允许将大量数据压缩成单个哈希值，常常用于数据的完整性校验。默克尔树的叶子节点是文件的哈希值，非叶子节点是由直接下层的两个哈希值拼接后再次哈希得到。循环计算，直至得到根节点（Merkle root）。
 
 Merkle Tree 的特点就是底层任意一个节点发生变化，其父节点直至根节点经过的所有节点，都会发生变化。与 Hash list 相比，虽然两者都能校验最终文件的完整性，且能在验证的情况下花费最小代价重新下载文件块，但是默克尔树能够在下载单个分支的文件后立即对其进行验证。
+
+计算源码见 [merkle.cpp](https://github.com/bitcoin/bitcoin/blob/0de7cc848e07d942e09bb3bb60189985e53d2bb5/src/consensus/merkle.cpp)，旧版方法可作对比，[BlockBuildMerkleTree](https://github.com/bitcoin/bitcoin/blob/0de7cc848e07d942e09bb3bb60189985e53d2bb5/src/test/merkle_tests.cpp)
+
+{% highlight C %}
+// bitcoin/src/consensus/merkle.cpp
+uint256 BlockMerkleRoot(const CBlock& block, bool* mutated)
+{
+    std::vector<uint256> leaves;
+    leaves.resize(block.vtx.size());
+    for (size_t s = 0; s < block.vtx.size(); s++) {
+        leaves[s] = block.vtx[s]->GetHash();
+    }
+    return ComputeMerkleRoot(std::move(leaves), mutated);
+}
+
+uint256 ComputeMerkleRoot(std::vector<uint256> hashes, bool* mutated) {
+    bool mutation = false;
+    while (hashes.size() > 1) {
+        if (mutated) {
+            for (size_t pos = 0; pos + 1 < hashes.size(); pos += 2) {
+                if (hashes[pos] == hashes[pos + 1]) mutation = true;
+            }
+        }
+        if (hashes.size() & 1) {
+            hashes.push_back(hashes.back());
+        }
+        SHA256D64(hashes[0].begin(), hashes[0].begin(), hashes.size() / 2);
+        hashes.resize(hashes.size() / 2);
+    }
+    if (mutated) *mutated = mutation;
+    if (hashes.size() == 0) return uint256();
+    return hashes[0];
+}
+{% endhighlight %}
 
 在比特币中，Merkle root 是在所有交易数据哈希值的基础上多次哈希得到，并且最终保存在 block header 中。下面以两笔交易为例，展示计算 Merkle tree 的过程：
 
@@ -342,6 +376,17 @@ lock_time 是一个多意字段，表示在某个高度的 Block 之前或某个
 
 977ae6e32349b99b72196cb62b5ef37329ed81b4 == Address (decoded)
 {% endhighlight %}
+
+在标准交易中的常见脚本操作码：
+
+1. OP_CHECKSIG 消费一个签名和一个公钥，如果由 SIGHASH 标志指定的交易数据被转换为使用生成该公钥的相同 ECDSA 私钥的签名就压入 TRUE， 否则，它会将 FALSE 压入堆栈。
+2. OP_DUP 把栈顶元素复制并压入栈中。
+3. OP_HASH160 消费栈顶元素，计算 RIPEMD160(SHA256())，并把计算后的值压入栈中。
+4. OP_EQUAL 消费栈顶的 2 个元素，比较，相同压入真，否则压入假。
+5. OP_VERIFY 消费栈顶元素，如果是 0 则终止脚本。
+6. OP_EQUALVERIFY 按顺序运行 OP_EQUAL 和 OP_VERIFY 。
+
+> [Opcodes Wiki](https://en.bitcoin.it/wiki/Script)
 
 脚本完整的执行过程如下图所示：
 
