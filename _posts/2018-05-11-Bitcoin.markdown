@@ -394,7 +394,7 @@ lock_time 是一个多意字段，表示在某个高度的 Block 之前或某个
 
 ![](/img/in-post/Bitcoin/script02.jpg)
 
-可以看出解锁脚本运行过程，主要是入栈，锁定脚本运行过程（主要是出栈），如果最后返回的结果为真，说明交易有效。
+可以看出解锁脚本运行过程，主要是入栈，锁定脚本运行过程（主要是出栈），如果最后返回的结果为真，说明交易有效。另外从执行过程可以看出，比特币脚本使用的是逆波兰表达式，所有操作符后置因此也被称为后缀表达式。
 
 在交易模块，还有一些细节没有展开说明，例如比特币中的地址，以及签名的验证都是独立，以后在单独的文章中进行介绍。
 
@@ -521,3 +521,67 @@ lock_time 是一个多意字段，表示在某个高度的 Block 之前或某个
 ```
 
 > [Developer Guide: Transactions](https://bitcoin.org/en/developer-guide#transactions)
+
+从前面可以知道，每一个区块的产生都伴随着一个特殊的交易，即创币交易（Generation TX），下面以交易 733d11251eb98dec077040c36e8b6431dcdc7d3fb721976fea22997b0b64abda 为例，
+
+```
+// Verbose 参数为 1
+{
+    "result": {
+        "txid": "733d11251eb98dec077040c36e8b6431dcdc7d3fb721976fea22997b0b64abda",
+        "hash": "631d4bd9f41eb5be21f828bc51b303bba9655a336b679981f474c2a7fe143d8f",
+        "version": 1,
+        "size": 225,
+        "vsize": 198,
+        "locktime": 0,
+        "vin": [
+            {
+                "coinbase": "0348f607232f706f6f6c2e626974636f696e2e636f6d2f5573652f426974636f696e2f436173682f1028696400d1cd8a70c8f23f51435655d5",
+                "sequence": 4294967295
+            }
+        ],
+        "vout": [
+            {
+                "value": 12.60797565,
+                "n": 0,
+                "scriptPubKey": {
+                    "asm": "OP_DUP OP_HASH160 4bd2d80f869cb3fd098d8dbd71ad0ad7898ca7b6 OP_EQUALVERIFY OP_CHECKSIG",
+                    "hex": "76a9144bd2d80f869cb3fd098d8dbd71ad0ad7898ca7b688ac",
+                    "reqSigs": 1,
+                    "type": "pubkeyhash",
+                    "addresses": [
+                        "17uvG5teUQeYmj5Sa6whsWaWtM6TjbsVFn"
+                    ]
+                }
+            },
+            {
+                "value": 0.00000000,
+                "n": 1,
+                "scriptPubKey": {
+                    "asm": "OP_RETURN aa21a9ed55d846395bde32960b454dab9a79da75dc503926e74971e0b328f54591a94375",
+                    "hex": "6a24aa21a9ed55d846395bde32960b454dab9a79da75dc503926e74971e0b328f54591a94375",
+                    "type": "nulldata"
+                }
+            }
+        ],
+        "hex": "010000000001010000000000000000000000000000000000000000000000000000000000000000ffffffff390348f607232f706f6f6c2e626974636f696e2e636f6d2f5573652f426974636f696e2f436173682f1028696400d1cd8a70c8f23f51435655d5ffffffff027d3e264b000000001976a9144bd2d80f869cb3fd098d8dbd71ad0ad7898ca7b688ac0000000000000000266a24aa21a9ed55d846395bde32960b454dab9a79da75dc503926e74971e0b328f54591a943750120000000000000000000000000000000000000000000000000000000000000000000000000",
+        "blockhash": "00000000000000000037e01f791a844866cb4ee585f857a26c05ccd7a692524a",
+        "confirmations": 5953,
+        "time": 1525808320,
+        "blocktime": 1525808320
+    },
+    "error": null,
+    "id": null
+}
+```
+
+Generation TX 的输入不是一个交易，没有对前一个输出的引用，而是带有 coinbase 字段的结构。该字段的值由挖出此 Block 的人填写，其中最著名的一段话来自于中本聪在比特币的[第一个交易](https://blockchain.info/tx/4a5e1e4baab89f3a32518a88c31bc87f618f76673e2cc77ab2127b7afdeda33b)中的写入的 coinbase 值是：
+
+```
+"coinbase":"04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73"
+```
+将该段 16 进制转换为 ASCII 字符，就是那段著名的创世块留言：
+
+```
+The Times 03/Jan/2009 Chancellor on brink of second bailout for banks
+```
